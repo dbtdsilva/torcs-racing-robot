@@ -4,6 +4,7 @@
 ### Custom ###
 .torcs.rc
 *.spec
+setup_linux.sh
 export/
 gennmtab
 torcs
