@@ -36,6 +36,18 @@ extern void GfParmInit(void);
 extern void gfRlstInit(void);
 
 
+static bool __NOISY__;
+
+void setNoisy(bool noisy)
+{
+	__NOISY__ = noisy;
+}
+bool getNoisy()
+{
+	return __NOISY__;
+}
+
+
 #ifdef WIN32
 #include <crtdbg.h>
 #include <assert.h>

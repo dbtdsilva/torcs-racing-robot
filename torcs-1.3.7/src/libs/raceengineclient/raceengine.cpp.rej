@@ -1,0 +1,41 @@
+--- libs/raceengineclient/raceengine.cpp	2013-04-22 16:26:18.641378225 +0200
++++ libs/raceengineclient/raceengine.cpp	2013-03-29 11:47:29.530815000 +0100
+@@ -359,6 +360,8 @@
+     tCarElt	*car;
+     int		allfinish;
+     tSituation	*s = ReInfo->s;
++    const int BUFSIZE = 1024;
++	char buf[BUFSIZE];
+ 
+     if ((s->cars[0]->_state & RM_CAR_STATE_FINISH) == 0) {
+ 	allfinish = 0;
+@@ -387,6 +390,29 @@
+     if (allfinish) {
+ 	ReInfo->s->_raceState = RM_RACE_ENDED;
+     }
++
++    for  (i = 0; i < s->_ncars; i++)
++    {
++		if (s->cars[i]->RESET==1)
++		{
++			//printf("******* RESETTING *****\n");
++			ReInfo->_reSimItf.config(s->cars[i], ReInfo);		
++			s->cars[i]->RESET=0;
++			sprintf(buf, "RELOADING");
++			ReRaceMsgSet(buf, 4);
++		}
++		if (s->cars[i]->RESTART==1)
++		{
++			printf("******* RESTARTING *****\n");
++			RESTART = 1;
++			s->cars[i]->RESTART=0;
++		}
++    }
++
++    if (RESTART == 1)
++    {
++		ReInfo->_reState = RE_STATE_RACE_STOP;
++    }
+ }
+ 
+ /* Compute the race rules and penalties */

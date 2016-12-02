@@ -1,0 +1,60 @@
+--- libs/tgf/tgf.def	2013-04-22 16:26:18.645378225 +0200
++++ libs/tgf/tgf.def	2013-03-29 11:47:29.530815000 +0100
+@@ -14,14 +14,14 @@
+ 	GfModInfo
+ 	GfModInfoDir
+ 	GfModFreeInfoList
+-	GfDirGetList
++	GfDirGetList
+ 	GfDirGetListFiltered
+ 	GfDirFreeList
+-	GfParmReadFile
++	GfParmReadFile
+ 	GfParmSetDTD
+ 	GfParmWriteFile
+ 	GfParmGetName
+-	GfParmGetStr
++	GfParmGetStr
+ 	GetDataDir
+ 	GfParmGetCurStr
+ 	GfParmSetStr
+@@ -53,16 +53,28 @@
+ 	_tgf_win_free
+ 	_tgf_win_strdup
+ 	GetLocalDir
+-	SetLocalDir
+-	GetDataDir
++	SetLocalDir
++	GetDataDir
+ 	SetDataDir
+-	GfHashRelease
+-	GfHashAddStr
+-	GfHashGetStr
+-	GfHashCreate
+-	GetLibDir
+-	SetLibDir
+-	SetSingleTextureMode
+-	GetSingleTextureMode
+-	GfNearestPow2
+-	GfCreateDir+	GfHashRelease
++	GfHashAddStr
++	GfHashGetStr
++	GfHashCreate
++	GetLibDir
++	SetLibDir
++	SetSingleTextureMode
++	GetSingleTextureMode
++	GfNearestPow2
++	GfCreateDir
++	setDamageLimit
++	getDamageLimit
++	setFuelConsumption
++	getFuelConsumption
++	setLaptimeLimit
++	getLaptimeLimit
++	setTimeout
++	getTimeout
++	setNoisy
++	getNoisy
++	setVersion
++	getVersion	

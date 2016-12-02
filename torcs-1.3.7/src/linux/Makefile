@@ -25,9 +25,7 @@ SOURCES = main.cpp linuxspec.cpp
 
 LDFLAGS = -rdynamic
 
-SOLIBS  =  -lracescreens  \
-	   -lrobottools   \
-	   -lclient       \
+SOLIBS  =  -lclient       \
 	   -lconfscreens  \
 	   -ltgf          \
 	   -ltgfclient    \
@@ -35,6 +33,8 @@ SOLIBS  =  -lracescreens  \
 	   -lplibul	  \
 	   -lraceengine   \
 	   -lmusicplayer  \
+	   -lracescreens  \
+	   -lrobottools   \
 	   -llearning
 
 EXPDIR  = include

@@ -43,6 +43,7 @@ static double	msgDisp;
 static double	bigMsgDisp;
 
 tRmInfo	*ReInfo = 0;
+int RESTART = 0;
 
 static void ReRaceRules(tCarElt *car);
 
