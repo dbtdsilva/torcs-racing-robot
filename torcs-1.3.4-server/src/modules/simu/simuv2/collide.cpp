@@ -49,10 +49,7 @@ void SimCarCollideZ(tCar *car)
 				car->DynGCg.vel.y -= normal.y * dotProd;
 				car->DynGCg.vel.z -= normal.z * dotProd;
 				if ((car->carElt->_state & RM_CAR_STATE_FINISH) == 0) {
-					if (getDamageLimit())
-						car->dammage += (int)(wheel->trkPos.seg->surface->kDammage * fabs(dotProd) * simDammageFactor[car->carElt->_skillLevel]);
-					else
-						car->fakeDammage += (int)(wheel->trkPos.seg->surface->kDammage * fabs(dotProd) * simDammageFactor[car->carElt->_skillLevel]);
+					car->dammage += (int)(wheel->trkPos.seg->surface->kDammage * fabs(dotProd) * simDammageFactor[car->carElt->_skillLevel]);
 				}
 			}
 		}
@@ -138,10 +135,7 @@ void SimCarCollideXYScene(tCar *car)
 		dotProd = initDotProd;
 		if (dotProd < 0.0f && (car->carElt->_state & RM_CAR_STATE_FINISH) == 0) {
 			dmg = curBarrier->surface->kDammage * (0.5f*dmgDotProd*dmgDotProd + 0.005f*fabs(1.0f-cosa)*absvel) * simDammageFactor[car->carElt->_skillLevel];
-			if (getDamageLimit())
-				car->dammage += (int)dmg;
-			else
-				car->fakeDammage += (int)dmg;
+			car->dammage += (int) dmg;
 		} else {
 			dmg = 0.0f;
 		}
@@ -297,10 +291,7 @@ static void SimCarCollideResponse(void * /*dummy*/, DtObjectRef obj1, DtObjectRe
 		}
 
 		if ((car[i]->carElt->_state & RM_CAR_STATE_FINISH) == 0) {
-			if (getDamageLimit())
-				car[i]->dammage += (int)(CAR_DAMMAGE * fabs(j) * damFactor * simDammageFactor[car[i]->carElt->_skillLevel]);
-			else
-				car[i]->fakeDammage += (int)(CAR_DAMMAGE * fabs(j) * damFactor * simDammageFactor[car[i]->carElt->_skillLevel]);
+			car[i]->dammage += (int)(CAR_DAMMAGE * fabs(j) * damFactor * simDammageFactor[car[i]->carElt->_skillLevel]);
 		}
 
 		// Compute collision velocity.
@@ -422,10 +413,7 @@ static void SimCarWallCollideResponse(void *clientdata, DtObjectRef obj1, DtObje
 
 	static const float DMGFACTOR = 0.00002f;
 	if ((car->carElt->_state & RM_CAR_STATE_FINISH) == 0) {
-		if (getDamageLimit())
-			car->dammage += (int)(CAR_DAMMAGE * (DMGFACTOR*j*j) * damFactor * simDammageFactor[car->carElt->_skillLevel]);
-		else
-			car->fakeDammage += (int)(CAR_DAMMAGE * (DMGFACTOR*j*j) * damFactor * simDammageFactor[car->carElt->_skillLevel]);
+		car->dammage += (int)(CAR_DAMMAGE * (DMGFACTOR*j*j) * damFactor * simDammageFactor[car->carElt->_skillLevel]);
 	}
 
 	sgScaleVec2(tmpv, n, j * car->Minv);

@@ -66,15 +66,3 @@ EXPORTS
 	GetSingleTextureMode
 	GfNearestPow2
 	GfCreateDir
-	setDamageLimit
-	getDamageLimit
-	setFuelConsumption
-	getFuelConsumption
-	setLaptimeLimit
-	getLaptimeLimit
-	setTimeout
-	getTimeout
-	setNoisy
-	getNoisy
-	setVersion
-	getVersion	
