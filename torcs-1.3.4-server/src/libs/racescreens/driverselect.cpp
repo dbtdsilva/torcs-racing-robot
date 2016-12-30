@@ -344,6 +344,7 @@ RmDriversSelect(void *vs)
 						robhdle = GfParmReadFile(buf, GFPARM_RMODE_STD);
 					}
 					snprintf(path, BUFSIZE, "%s/%s/%d", ROB_SECT_ROBOTS, ROB_LIST_INDEX, curmod->modInfo[i].index);
+					printf("Robot Name=%s, path=%s\n",dname,path);
 					const char* carName = GfParmGetStr(robhdle, path, ROB_ATTR_CAR, "");
 					if (strcmp(GfParmGetStr(robhdle, path, ROB_ATTR_TYPE, ROB_VAL_ROBOT), ROB_VAL_ROBOT)) {
 						human = 1;

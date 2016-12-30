@@ -36,6 +36,18 @@ extern void gfParamInit(void);
 extern void gfRlstInit(void);
 
 
+static bool __NOISY__;
+
+void setNoisy(bool noisy)
+{
+	__NOISY__ = noisy;
+}
+bool getNoisy()
+{
+	return __NOISY__;
+}
+
+
 #ifdef WIN32
 #include <crtdbg.h>
 #include <assert.h>
@@ -352,3 +364,59 @@ int GfCreateDir(char *path)
 	}
 }
 
+/* flags used to remove damage, time-limit and fuel consumption */
+static bool _damageLimit = true;
+static bool _fuelConsumption = true;
+static bool _laptimeLimit = true;
+/* timeout for UDP connection */
+static long int _timeout = -1;
+
+/*version tag*/
+static char *_version;
+
+/* Helper to set and get the flags used to remove damage, time-limit and fuel consumption */
+void setDamageLimit(bool damageLimit)
+{
+	_damageLimit = damageLimit;
+}
+bool getDamageLimit()
+{
+	return _damageLimit;
+}
+void setFuelConsumption(bool fuelConsumption)
+{
+	_fuelConsumption = fuelConsumption;
+}
+bool getFuelConsumption()
+{
+	return _fuelConsumption;
+}
+void setLaptimeLimit(bool laptimeLimit)
+{
+	_laptimeLimit = laptimeLimit;
+}
+bool getLaptimeLimit()
+{
+	return _laptimeLimit;
+}
+
+/* Helper to set and get the timeout of UDP comm */
+void setTimeout(long int timeout)
+{
+	_timeout = timeout;
+}
+
+long int getTimeout()
+{
+	return _timeout;
+}
+
+void setVersion(char *version)
+{
+	_version = (char *)malloc(strlen(version) + 1);
+	strcpy(_version,version);
+}
+char* getVersion()
+{
+	return _version;
+}

@@ -34,10 +34,46 @@ init_args(int argc, char **argv, const char** raceconfig)
 {
 	int i;
 	i = 1;
+
+    setNoisy(false);
+    setVersion("2013");
+
 	while (i < argc) {
 		if ((strncmp(argv[i], "-s", 2) == 0) || (strncmp(argv[i], "/s", 2) == 0)) {
 			i++;
 			SetSingleTextureMode ();
+		}  else if (strncmp(argv[i], "-t", 2) == 0) {
+		    i++;
+		    if (i < argc) {
+				long int t;
+				sscanf(argv[i],"%ld",&t);
+				setTimeout(t);
+				printf("UDP Timeout set to %ld 10E-6 seconds.\n",t);
+				i++;
+		    }
+		} else if (strncmp(argv[i], "-nodamage", 9) == 0) {
+		    i++;
+		    setDamageLimit(false);
+		    printf("Car damages disabled!\n");
+		} else if (strncmp(argv[i], "-nofuel", 7) == 0) {
+		    i++;
+		    setFuelConsumption(false);
+		    printf("Fuel consumption disabled!\n");
+		} else if (strncmp(argv[i], "-noisy", 6) == 0) {
+			i++;
+			setNoisy(true);
+			printf("Noisy Sensors!\n");
+		} else if (strncmp(argv[i], "-ver", 4) == 0) {
+			i++;
+			if (i < argc) {
+					setVersion(argv[i]);
+	    			printf("Set version: \"%s\"\n",getVersion());
+	    			i++;
+			}
+		} else if (strncmp(argv[i], "-nolaptime", 10) == 0) {
+		    i++;
+		    setLaptimeLimit(false);
+		    printf("Laptime limit disabled!\n");			
 		} else if ((strncmp(argv[i], "-r", 2) == 0) || (strncmp(argv[i], "/r", 2) == 0)) {
 			i++;
 			*raceconfig = "";

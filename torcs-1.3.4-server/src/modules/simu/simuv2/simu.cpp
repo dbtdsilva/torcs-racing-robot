@@ -425,6 +425,7 @@ SimUpdate(tSituation *s, double deltaTime, int telemetry)
 		carElt->priv.collision |= car->collision;
 		carElt->priv.simcollision = car->collision;
 		carElt->_dammage = car->dammage;
+		carElt->_fakeDammage = car->fakeDammage;		
 	}
 }
 

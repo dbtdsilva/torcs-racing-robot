@@ -622,6 +622,23 @@ const void *GfHashGetNext(void *hash);
 #define GF_DIR_CREATION_FAILED 0
 #define GF_DIR_CREATED 1
 
+/* Helper to set and get the flags used to remove damage, time-limit and fuel consumption */
+extern void setDamageLimit(bool damageLimit);
+extern bool getDamageLimit();
+extern void setFuelConsumption(bool fuelConsumption);
+extern bool getFuelConsumption();
+extern void setLaptimeLimit(bool laptimeLimit);
+extern bool getLaptimeLimit();
+/* Helper to set and get the timeout of UDP comm */
+extern void setTimeout(long int timeout);
+extern long int getTimeout();
+
+extern void setNoisy(bool noisy);
+extern bool getNoisy();
+
+extern void setVersion(char *version);
+extern char* getVersion();
+
 #endif /* __TGF__H__ */
 
 

@@ -471,17 +471,21 @@ ReRaceStop(void)
 {
 	void	*params = ReInfo->params;
 
-	if (!strcmp(GfParmGetStr(params, ReInfo->_reRaceName, RM_ATTR_ALLOW_RESTART, RM_VAL_NO), RM_VAL_NO)) {
-		StopScrHandle = RmTriStateScreen("Race Stopped",
-					"Abandon Race", "Abort current race", AbortRaceHookInit(),
-					"Resume Race", "Return to Race", BackToRaceHookInit(),
-					"Quit Game", "Quit the game", QuitHookInit());
-	} else {
-		StopScrHandle = RmFourStateScreen("Race Stopped",
-					"Restart Race", "Restart the current race", RestartRaceHookInit(),
-					"Abandon Race", "Abort current race", AbortRaceHookInit(),
-					"Resume Race", "Return to Race", BackToRaceHookInit(),
-					"Quit Game", "Quit the game", QuitHookInit());
+	if (RESTART!=1)
+	{
+
+		if (!strcmp(GfParmGetStr(params, ReInfo->_reRaceName, RM_ATTR_ALLOW_RESTART, RM_VAL_NO), RM_VAL_NO)) {
+			StopScrHandle = RmTriStateScreen("Race Stopped",
+						"Abandon Race", "Abort current race", AbortRaceHookInit(),
+						"Resume Race", "Return to Race", BackToRaceHookInit(),
+						"Quit Game", "Quit the game", QuitHookInit());
+		} else {
+			StopScrHandle = RmFourStateScreen("Race Stopped",
+						"Restart Race", "Restart the current race", RestartRaceHookInit(),
+						"Abandon Race", "Abort current race", AbortRaceHookInit(),
+						"Resume Race", "Return to Race", BackToRaceHookInit(),
+						"Quit Game", "Quit the game", QuitHookInit());
+		}
 	}
 	return RM_ASYNC | RM_NEXT_STEP;
 }

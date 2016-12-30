@@ -1,11 +1,8 @@
 /***************************************************************************
-
-    file        : raceengine.h
-    created     : Sat Nov 23 09:35:21 CET 2002
-    copyright   : (C) 2002 by Eric Espié                        
-    email       : eric.espie@torcs.org   
-    version     : $Id: raceengine.h,v 1.4 2004/04/05 18:25:00 olethros Exp $                                  
-
+ 
+    file                 : SimpleParser.h
+    copyright            : (C) 2007 Daniele Loiacono
+ 
  ***************************************************************************/
 
 /***************************************************************************
@@ -16,27 +13,31 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- 
-/** @file    
-    		
-    @author	<a href=mailto:torcs@free.fr>Eric Espie</a>
-    @version	$Id: raceengine.h,v 1.4 2004/04/05 18:25:00 olethros Exp $
-*/
+#ifndef SIMPLEPARSER_H_
+#define SIMPLEPARSER_H_
 
-#ifndef _RACEENGINE_H_
-#define _RACEENGINE_H_
+#include <iostream>
+#include <sstream>
+#include <cstring>
 
+using namespace std;
 
 
-extern void ReStart(void);
-extern void ReStop(void);
-extern int  ReUpdate(void);
-extern void ReTimeMod (void *vcmd);
+class SimpleParser
+{
+public:
+        static bool  parse(string sensors, string tag, float &value);
 
-extern tRmInfo	*ReInfo;
-extern int	RESTART;
+        static bool  parse(string sensors, string tag, int &value);
 
-#endif /* _RACEENGINE_H_ */ 
+        static bool  parse(string sensors, string tag, float *value, int size);
 
+        static string stringify(string tag, float value);
 
+        static string  stringify(string tag, int value);
 
+        static string  stringify(string tag, float *value, int size);
+
+};
+
+#endif /*SIMPLEPARSER_H_*/
