@@ -6,7 +6,7 @@ const int SimpleDriver::gearDown[6] = {0, 2500, 3000, 3000, 3500, 3500};
 
 /* Stuck constants*/
 const int SimpleDriver::stuckTime = 25;
-const double SimpleDriver::stuckAngle = .523598775; //PI/6
+const float SimpleDriver::stuckAngle = .523598775; //PI/6
 
 /* Accel and Brake Constants*/
 const float SimpleDriver::maxSpeedDist = 70;
@@ -65,12 +65,11 @@ double SimpleDriver::getSteer(CarState &cs) {
     if (cs.getSpeedX() > steerSensitivityOffset)
         return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
     else
-        return (targetAngle) / steerLock;
+        return targetAngle / steerLock;
 
 }
 
-float
-SimpleDriver::getAccel(CarState &cs) {
+float SimpleDriver::getAccel(CarState &cs) {
     // checks if car is out of track
     if (cs.getTrackPos() < 1 && cs.getTrackPos() > -1) {
         // reading of sensor at +5 degree w.r.t. car axis
@@ -114,8 +113,7 @@ SimpleDriver::getAccel(CarState &cs) {
 
 }
 
-CarControl
-SimpleDriver::wDrive(CarState cs) {
+CarControl SimpleDriver::wDrive(CarState cs) {
     // check if car is currently stuck
     if (fabs(cs.getAngle()) > stuckAngle) {
         // update stuck counter
@@ -182,8 +180,7 @@ SimpleDriver::wDrive(CarState cs) {
     }
 }
 
-float
-SimpleDriver::filterABS(CarState &cs, float brake) {
+float SimpleDriver::filterABS(CarState &cs, float brake) {
     // convert speed to m/s
     float speed = cs.getSpeedX() / 3.6;
     // when spedd lower than min speed for abs do nothing
@@ -209,18 +206,15 @@ SimpleDriver::filterABS(CarState &cs, float brake) {
         return brake;
 }
 
-void
-SimpleDriver::onShutdown() {
+void SimpleDriver::onShutdown() {
     cout << "Bye bye!" << endl;
 }
 
-void
-SimpleDriver::onRestart() {
+void SimpleDriver::onRestart() {
     cout << "Restarting the race!" << endl;
 }
 
-void
-SimpleDriver::clutching(CarState &cs, float &clutch) {
+void SimpleDriver::clutching(CarState &cs, float &clutch) {
     double maxClutch = clutchMax;
 
     // Check if the current situation is the race start
@@ -245,16 +239,15 @@ SimpleDriver::clutching(CarState &cs, float &clutch) {
         if (clutch != maxClutch) {
             clutch -= delta;
             clutch = max(0.0, double(clutch));
-        }
-            // if clutch is at max value decrease it very slowly
-        else
+        } // if clutch is at max value decrease it very slowly
+        else {
             clutch -= clutchDec;
+        }
     }
 }
 
-void
-SimpleDriver::init(float *angles) {
-    // set angles as {-90,-75,-60,-45,-30,20,15,10,5,0,5,10,15,20,30,45,60,75,90}
+void SimpleDriver::init(float *angles) {
+    // set angles as {-90, -75, -60, -45, -30, -20, -15, -10, -5, 0, 5, 10, 15, 20, 30, 45, 60, 75, 90}
     for (int i = 0; i < 5; i++) {
         angles[i] = -90 + i * 15;
         angles[18 - i] = 90 - i * 15;
