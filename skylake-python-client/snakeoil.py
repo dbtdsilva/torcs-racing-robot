@@ -56,6 +56,8 @@ import socket
 import sys
 import getopt
 
+from torcs_launcher import TorcsLauncher
+
 # Initialize help messages
 ophelp = 'Options:\n'
 ophelp += ' --host, -H <host>    TORCS server host. [localhost]\n'
@@ -95,12 +97,14 @@ class Client:
         self.R = DriverAction()
         self.setup_connection()
 
+        self.misses = 0
+
     def setup_connection(self):
         # == Set Up UDP Socket ==
         try:
             self.so = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         except socket.error, emsg:
-            print 'Error: Could not create socket...'
+            print 'Error: Could not create socket!'
             sys.exit(-1)
         # == Initialize Connection To Server ==
         self.so.settimeout(1)
@@ -116,7 +120,7 @@ class Client:
             try:
                 sockdata, addr = self.so.recvfrom(1024)
             except socket.error, emsg:
-                print "Waiting for server"
+                print "Waiting for server.."
             if '***identified***' in sockdata:
                 print "Client connected!"
                 break
@@ -171,9 +175,10 @@ class Client:
                 # Receive server data 
                 sockdata, addr = self.so.recvfrom(1024)
             except socket.error, emsg:
-                print "Waiting for data.............."
+                print "Waiting for data.."
+                self.misses += 1
             if '***identified***' in sockdata:
-                print "Client connected.............."
+                print "Client connected!"
                 continue
             elif '***shutdown***' in sockdata:
                 print "Server has stopped the race. You were in %d place." % self.S.d['racePos']
@@ -203,7 +208,7 @@ class Client:
 
     def shutdown(self):
         if not self.so: return
-        print "Race terminated or %d steps elapsed. Shutting down." % self.maxSteps
+        print "Race terminated or max steps elapsed. Shutting down."
         self.so.close()
         self.so = None
         # sys.exit() # No need for this really.
@@ -295,6 +300,10 @@ def clip(v, lo, hi):
 # ================ MAIN ================
 if __name__ == "__main__":
     from skylake_car import SkylakeCar
+
+    torcs = TorcsLauncher()
+    torcs.launch()
+
     C = Client()
     car = SkylakeCar(C)
     if C.maxSteps == None:
