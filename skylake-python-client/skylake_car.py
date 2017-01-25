@@ -1,9 +1,12 @@
 import math
-
+from control_steering import SteeringControl
+from control_gear import GearControl
 
 class SkylakeCar:
     def __init__(self, client):
         self.client = client
+        self.steer_control = SteeringControl()
+        self.gear_control = GearControl()
         self.steer_lock = 0.366519
 
     def drive(self):
@@ -16,7 +19,7 @@ class SkylakeCar:
             correct thing to do is write your own `drive()` function.'''
         S = self.client.S.d
         R = self.client.R.d
-        target_speed = 100
+        target_speed = 200
 
         # Damage Control
         target_speed -= S['damage'] * .05
@@ -24,7 +27,7 @@ class SkylakeCar:
             target_speed = 25
 
         # Steer To Corner
-        angle = S['angle'] - S['trackPos'] * 0.5
+        angle = S['angle'] - self.steer_control.control(S['trackPos'])
         R['steer'] = angle / self.steer_lock
         R['steer'] = clip(R['steer'], -1, 1)
 
@@ -43,17 +46,7 @@ class SkylakeCar:
         R['accel'] = clip(R['accel'], 0, 1)
 
         # Automatic Transmission
-        R['gear'] = 1
-        if S['speedX'] > 50:
-            R['gear'] = 2
-        if S['speedX'] > 80:
-            R['gear'] = 3
-        if S['speedX'] > 110:
-            R['gear'] = 4
-        if S['speedX'] > 140:
-            R['gear'] = 5
-        if S['speedX'] > 170:
-            R['gear'] = 6
+        R['gear'] = self.gear_control.control(int(S['gear']), S['rpm'])
 
 def clip(v, lo, hi):
     if v < lo:
