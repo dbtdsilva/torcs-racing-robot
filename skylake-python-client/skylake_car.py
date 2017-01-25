@@ -4,6 +4,7 @@ import math
 class SkylakeCar:
     def __init__(self, client):
         self.client = client
+        self.steer_lock = 0.366519
 
     def drive(self):
         self.client.get_servers_input()
@@ -19,12 +20,12 @@ class SkylakeCar:
 
         # Damage Control
         target_speed -= S['damage'] * .05
-        if target_speed < 25: target_speed = 25
+        if target_speed < 25:
+            target_speed = 25
 
         # Steer To Corner
-        R['steer'] = S['angle'] * 10 / math.pi
-        # Steer To Center
-        R['steer'] -= S['trackPos'] * .10
+        angle = S['angle'] - S['trackPos'] * 0.5
+        R['steer'] = angle / self.steer_lock
         R['steer'] = clip(R['steer'], -1, 1)
 
         # Throttle Control
