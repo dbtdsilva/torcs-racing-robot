@@ -32,12 +32,12 @@ class SkylakeCar:
         R['steer'] = clip(R['steer'], -1, 1)
 
         # Throttle Control
-        if S['speedX'] < target_speed - (R['steer'] * 50):
-            R['accel'] += .01
+        if abs(S['trackPos']) < 0.1 or S['speedX'] < 50:
+            R['accel'] += .1
         else:
-            R['accel'] -= .01
-        if S['speedX'] < 10:
-            R['accel'] += 1 / (S['speedX'] + .1)
+            R['accel'] -= .1
+        #if S['speedX'] < 10:
+        #    R['accel'] += 1 / (S['speedX'] + .1)
 
         # Traction Control System
         if ((S['wheelSpinVel'][2] + S['wheelSpinVel'][3]) -
