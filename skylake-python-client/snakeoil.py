@@ -93,6 +93,7 @@ class Client:
         if t: self.track_name = t
         if s: self.stage = s
         if d: self.debug = d
+        self.angles = [-90, -75, -60, -45, -30, -20, -15, -10, -5, 0, 5, 10, 15, 20, 30, 45, 60, 75, 90]
         self.S = ServerState()
         self.R = DriverAction()
         self.setup_connection()
@@ -108,9 +109,9 @@ class Client:
             sys.exit(-1)
         # == Initialize Connection To Server ==
         self.so.settimeout(1)
+        angles_str = [str(x) + " " for x in self.angles]
         while True:
-            a = "-90 -75 -60 -45 -30 -20 -15 -10 -5 0 5 10 15 20 30 45 60 75 90"
-            initmsg = '%s(init %s)' % (self.sid, a)
+            initmsg = '%s(init %s)' % (self.sid, angles_str)
 
             try:
                 self.so.sendto(initmsg, (self.host, self.port))

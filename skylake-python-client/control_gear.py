@@ -1,6 +1,7 @@
 class GearControl:
     def __init__(self):
-        self.rpm_up = [5000, 6000, 6000, 6500, 7000, 0]
+        #self.rpm_up = [5000, 6000, 6000, 6500, 7000, 0]
+        self.rpm_up = [7000, 7000, 7000, 7000, 7000, 0]
         self.rpm_down = [0, 2500, 3000, 3000, 3500, 3500]
 
     def control(self, gear, rpm):
