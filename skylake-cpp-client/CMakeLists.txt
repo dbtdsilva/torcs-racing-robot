@@ -19,7 +19,7 @@ ADD_EXECUTABLE(skylake
 	BaseDriver.h
 	CarControl.cpp CarControl.h
 	CarState.cpp CarState.h
-	SimpleDriver.cpp SimpleDriver.h
+	SkylakeDriver.cpp SkylakeDriver.h
 	SimpleParser.cpp SimpleParser.h
 	WrapperBaseDriver.cpp WrapperBaseDriver.h)
 #TARGET_LINK_LIBRARIES(skylake ${QT_LIBRARIES} ${SDL2_LIBRARIES} RobSock)

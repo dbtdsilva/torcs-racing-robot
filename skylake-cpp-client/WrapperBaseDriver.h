@@ -11,7 +11,7 @@ class WrapperBaseDriver : public BaseDriver
 {
 public:
 	// the drive function wiht string input and output
-	virtual string drive(string sensors);
+	string drive(string sensors);
 	// drive function that exploits the CarState and CarControl wrappers as input and output.
 	virtual CarControl wDrive(CarState cs) = 0;
 };

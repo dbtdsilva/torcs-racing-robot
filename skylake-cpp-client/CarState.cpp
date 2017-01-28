@@ -20,6 +20,9 @@ CarState::CarState(string sensors) {
     SimpleParser::parse(sensors, "trackPos", this->trackPos);
     SimpleParser::parse(sensors, "wheelSpinVel", this->wheelSpinVel, 4);
     SimpleParser::parse(sensors, "z", this->z);
+
+    SimpleParser::parse(sensors, "speedTH", this->speedTH);
+    SimpleParser::parse(sensors, "yaw", this->yaw);
 }
 
 string CarState::toString() {
@@ -203,8 +206,15 @@ void CarState::setWheelSpinVel(int i, float value) {
 
 float CarState::getZ() {
     return z;
-};
+}
 
 void CarState::setZ(float z) {
     this->z = z;
-};
+}
+
+float CarState::getSpeedTH() {
+    return this->speedTH;
+}
+float CarState::getYaw() {
+    return this->yaw;
+}

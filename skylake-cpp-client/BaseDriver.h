@@ -27,7 +27,7 @@ public:
     // The main function:
     //     - the input variable sensors represents the current world sate
     //     - it returns a string representing the controlling action to perform
-    virtual string drive(string sensors)=0;
+    virtual string drive(string sensors) = 0;
     // Callback function called at shutdown
     virtual void onShutdown() {};
     // Callback function called at server restart

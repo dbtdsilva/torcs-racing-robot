@@ -1,4 +1,4 @@
-#include "SimpleDriver.h"
+#include "SkylakeDriver.h"
 
 /* Gear Changing Constants*/
 const int SimpleDriver::gearUp[6] = {5000, 6000, 6000, 6500, 7000, 0};
@@ -35,8 +35,48 @@ const float SimpleDriver::clutchDec = 0.01;
 const float SimpleDriver::clutchMaxModifier = 1.3;
 const float SimpleDriver::clutchMaxTime = 1.5;
 
+SkylakeDriver::SkylakeDriver() {
+    stuck = 0;
+    clutch = 0.0;
+}
 
-int SimpleDriver::getGear(CarState &cs) {
+CarControl SkylakeDriver::wDrive(CarState cs) {
+    printf("%7.2f %7.2f\n", cs.getSpeedTH(), cs.getYaw());
+
+    // compute acceleration/brake command
+    float accel_and_brake = getAccel(cs);
+    // compute gear
+    int gear = getGear(cs);
+    // compute steering
+    float steer = getSteer(cs);
+
+
+    // normalize steering
+    if (steer < -1)
+        steer = -1;
+    if (steer > 1)
+        steer = 1;
+
+    // set accel and brake from the joint accel/brake command
+    float accel, brake;
+    if (accel_and_brake > 0) {
+        accel = accel_and_brake;
+        brake = 0;
+    } else {
+        accel = 0;
+        // apply ABS to brake
+        brake = filterABS(cs, -accel_and_brake);
+    }
+
+    // Calculate clutching
+    clutching(cs, clutch);
+
+    // build a CarControl variable and return it
+    CarControl cc(accel, brake, gear, steer, clutch);
+    return cc;
+}
+
+int SkylakeDriver::getGear(CarState &cs) {
 
     int gear = cs.getGear();
     int rpm = cs.getRpm();
@@ -57,19 +97,18 @@ int SimpleDriver::getGear(CarState &cs) {
         return gear;
 }
 
-double SimpleDriver::getSteer(CarState &cs) {
+double SkylakeDriver::getSteer(CarState &cs) {
     // steering angle is compute by correcting the actual car angle w.r.t. to track
     // axis [cs.getAngle()] and to adjust car position w.r.t to middle of track [cs.getTrackPos()*0.5]
     double targetAngle = (cs.getAngle() - cs.getTrackPos() * 0.5);
     // at high speed reduce the steering command to avoid loosing the control
-    if (cs.getSpeedX() > steerSensitivityOffset)
-        return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
-    else
-        return targetAngle / steerLock;
-
+    //if (cs.getSpeedX() > steerSensitivityOffset)
+    //    return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
+    //else
+    return targetAngle / steerLock;
 }
 
-float SimpleDriver::getAccel(CarState &cs) {
+float SkylakeDriver::getAccel(CarState &cs) {
     // checks if car is out of track
     if (cs.getTrackPos() < 1 && cs.getTrackPos() > -1) {
         // reading of sensor at +5 degree w.r.t. car axis
@@ -113,74 +152,7 @@ float SimpleDriver::getAccel(CarState &cs) {
 
 }
 
-CarControl SimpleDriver::wDrive(CarState cs) {
-    // check if car is currently stuck
-    if (fabs(cs.getAngle()) > stuckAngle) {
-        // update stuck counter
-        stuck++;
-    } else {
-        // if not stuck reset stuck counter
-        stuck = 0;
-    }
-
-    // after car is stuck for a while apply recovering policy
-    if (stuck > stuckTime) {
-        /* set gear and steering command assuming car is
-         * pointing in a direction out of track */
-
-        // to bring car parallel to track axis
-        float steer = -cs.getAngle() / steerLock;
-        int gear = -1; // gear R
-
-        // if car is pointing in the correct direction revert gear and steer  
-        if (cs.getAngle() * cs.getTrackPos() > 0) {
-            gear = 1;
-            steer = -steer;
-        }
-
-        // Calculate clutching
-        clutching(cs, clutch);
-
-        // build a CarControl variable and return it
-        CarControl cc(1.0, 0.0, gear, steer, clutch);
-        return cc;
-    } else // car is not stuck
-    {
-        // compute acceleration/brake command
-        float accel_and_brake = getAccel(cs);
-        // compute gear 
-        int gear = getGear(cs);
-        // compute steering
-        float steer = getSteer(cs);
-
-
-        // normalize steering
-        if (steer < -1)
-            steer = -1;
-        if (steer > 1)
-            steer = 1;
-
-        // set accel and brake from the joint accel/brake command 
-        float accel, brake;
-        if (accel_and_brake > 0) {
-            accel = accel_and_brake;
-            brake = 0;
-        } else {
-            accel = 0;
-            // apply ABS to brake
-            brake = filterABS(cs, -accel_and_brake);
-        }
-
-        // Calculate clutching
-        clutching(cs, clutch);
-
-        // build a CarControl variable and return it
-        CarControl cc(accel, brake, gear, steer, clutch);
-        return cc;
-    }
-}
-
-float SimpleDriver::filterABS(CarState &cs, float brake) {
+float SkylakeDriver::filterABS(CarState &cs, float brake) {
     // convert speed to m/s
     float speed = cs.getSpeedX() / 3.6;
     // when spedd lower than min speed for abs do nothing
@@ -206,11 +178,11 @@ float SimpleDriver::filterABS(CarState &cs, float brake) {
         return brake;
 }
 
-void SimpleDriver::onShutdown() {
+void SkylakeDriver::onShutdown() {
     cout << "Bye bye!" << endl;
 }
 
-void SimpleDriver::onRestart() {
+void SkylakeDriver::onRestart() {
     cout << "Restarting the race!" << endl;
 }
 

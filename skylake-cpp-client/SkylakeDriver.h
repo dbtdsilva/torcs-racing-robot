@@ -26,25 +26,12 @@
 
 using namespace std;
 
-class SimpleDriver : public WrapperBaseDriver {
+class SkylakeDriver : public WrapperBaseDriver {
 public:
-
-    // Constructor
-    SimpleDriver() {
-        stuck = 0;
-        clutch = 0.0;
-    };
-
-    // SimpleDriver implements a simple and heuristic controller for driving
+    SkylakeDriver();
     virtual CarControl wDrive(CarState cs);
-
-    // Print a shutdown message
     virtual void onShutdown();
-
-    // Print a restart message
     virtual void onRestart();
-
-    // Initialization of the desired angles for the rangefinders
     virtual void init(float *angles);
 
 private:

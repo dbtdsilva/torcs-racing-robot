@@ -40,6 +40,9 @@ public:
     float getWheelSpinVel(int i);
     float getZ();
 
+    float getSpeedTH();
+    float getYaw();
+
     void setAngle(float angle);
     void setCurLapTime(float curLapTime);
     void setDamage(float damage);
@@ -59,7 +62,6 @@ public:
     void setTrackPos(float trackPos);
     void setWheelSpinVel(int i, float value);
     void setZ(float z);
-
 private:
     float angle;
     float curLapTime;
@@ -80,6 +82,9 @@ private:
     float trackPos;
     float wheelSpinVel[4];
     float z;
+
+    float yaw;
+    float speedTH;
 };
 
 #endif /*CARSTATE_H_*/
