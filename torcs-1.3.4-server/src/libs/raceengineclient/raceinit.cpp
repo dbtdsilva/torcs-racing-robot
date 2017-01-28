@@ -149,7 +149,7 @@ static void reSelectRaceman(void *params)
 	}
 
 	e = strstr(s, PARAMEXT);
-	ReInfo->_reFilename = strndup(s, e-s+1);
+	ReInfo->_reFilename = strndup(s, (size_t)(e-s+1));
 	ReInfo->_reFilename[e-s] = '\0';
 	ReInfo->_reName = GfParmGetStr(params, RM_SECT_HEADER, RM_ATTR_NAME, "");
 	ReStateApply(RE_STATE_CONFIG);
@@ -191,7 +191,7 @@ void ReRunRaceOnConsole(const char* raceconfig)
 	}
 
 	e = strstr(s, PARAMEXT);
-	ReInfo->_reFilename = strndup(s, e-s+1);
+	ReInfo->_reFilename = strndup(s, (size_t)(e-s+1));
 	ReInfo->_reFilename[e-s] = '\0';
 	ReInfo->_reName = GfParmGetStr(ReInfo->params, RM_SECT_HEADER, RM_ATTR_NAME, "");
 
