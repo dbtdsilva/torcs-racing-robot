@@ -16,8 +16,8 @@ typedef struct sockaddr_in tSockAddrIn;
 #define CLOSE(x) close(x)
 #define INVALID(x) x < 0
 
-class SimpleDriver;
-typedef SimpleDriver tDriver;
+class SkylakeDriver;
+typedef SkylakeDriver tDriver;
 
 using namespace std;
 

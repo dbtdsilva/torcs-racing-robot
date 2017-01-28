@@ -15,13 +15,14 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 #INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(skylake 
-	client.cpp
-	BaseDriver.h
-	CarControl.cpp CarControl.h
-	CarState.cpp CarState.h
-	SkylakeDriver.cpp SkylakeDriver.h
-	SimpleParser.cpp SimpleParser.h
-	WrapperBaseDriver.cpp WrapperBaseDriver.h)
+		client.cpp
+		BaseDriver.h
+		CarControl.cpp CarControl.h
+		CarState.cpp CarState.h
+		SkylakeDriver.cpp SkylakeDriver.h
+		SimpleParser.cpp SimpleParser.h
+		SkylakeConsts.h
+		WrapperBaseDriver.cpp WrapperBaseDriver.h)
 #TARGET_LINK_LIBRARIES(skylake ${QT_LIBRARIES} ${SDL2_LIBRARIES} RobSock)
 SET_TARGET_PROPERTIES(skylake PROPERTIES COMPILE_FLAGS "-std=c++14 -O3")
 

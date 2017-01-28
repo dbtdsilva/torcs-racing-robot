@@ -93,7 +93,7 @@ private:
     int getGear(CarState &cs);
 
     // Solves the steering sub problems
-    double getSteer(CarState &cs);
+    float getSteer(CarState &cs);
 
     // Solves the gear changing sub problems
     float getAccel(CarState &cs);
@@ -103,6 +103,10 @@ private:
 
     // Solves the clutching sub problems
     void clutching(CarState &cs, float &clutch);
+
+    CarControl control;
+
+    double x, y, angle;
 };
 
 #endif /*SIMPLEDRIVER_H_*/

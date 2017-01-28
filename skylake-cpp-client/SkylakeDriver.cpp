@@ -1,50 +1,57 @@
 #include "SkylakeDriver.h"
+#include "SkylakeConsts.h"
 
 /* Gear Changing Constants*/
-const int SimpleDriver::gearUp[6] = {5000, 6000, 6000, 6500, 7000, 0};
-const int SimpleDriver::gearDown[6] = {0, 2500, 3000, 3000, 3500, 3500};
+const int SkylakeDriver::gearUp[6] = {5000, 6000, 6000, 6500, 7000, 0};
+const int SkylakeDriver::gearDown[6] = {0, 2500, 3000, 3000, 3500, 3500};
 
 /* Stuck constants*/
-const int SimpleDriver::stuckTime = 25;
-const float SimpleDriver::stuckAngle = .523598775; //PI/6
+const int SkylakeDriver::stuckTime = 25;
+const float SkylakeDriver::stuckAngle = .523598775; //PI/6
 
 /* Accel and Brake Constants*/
-const float SimpleDriver::maxSpeedDist = 70;
-const float SimpleDriver::maxSpeed = 200;
-const float SimpleDriver::sin5 = 0.08716;
-const float SimpleDriver::cos5 = 0.99619;
+const float SkylakeDriver::maxSpeedDist = 70;
+const float SkylakeDriver::maxSpeed = 200;
+const float SkylakeDriver::sin5 = 0.08716;
+const float SkylakeDriver::cos5 = 0.99619;
 
 /* Steering constants*/
-const float SimpleDriver::steerLock = 0.366519;
-const float SimpleDriver::steerSensitivityOffset = 80.0;
-const float SimpleDriver::wheelSensitivityCoeff = 1;
+const float SkylakeDriver::steerLock = 0.366519;
+const float SkylakeDriver::steerSensitivityOffset = 80.0;
+const float SkylakeDriver::wheelSensitivityCoeff = 1;
 
 /* ABS Filter Constants */
-const float SimpleDriver::wheelRadius[4] = {0.3306, 0.3306, 0.3276, 0.3276};
-const float SimpleDriver::absSlip = 2.0;
-const float SimpleDriver::absRange = 3.0;
-const float SimpleDriver::absMinSpeed = 3.0;
+const float SkylakeDriver::wheelRadius[4] = {0.3306, 0.3306, 0.3276, 0.3276};
+const float SkylakeDriver::absSlip = 2.0;
+const float SkylakeDriver::absRange = 3.0;
+const float SkylakeDriver::absMinSpeed = 3.0;
 
 /* Clutch constants */
-const float SimpleDriver::clutchMax = 0.5;
-const float SimpleDriver::clutchDelta = 0.05;
-const float SimpleDriver::clutchRange = 0.82;
-const float SimpleDriver::clutchDeltaTime = 0.02;
-const float SimpleDriver::clutchDeltaRaced = 10;
-const float SimpleDriver::clutchDec = 0.01;
-const float SimpleDriver::clutchMaxModifier = 1.3;
-const float SimpleDriver::clutchMaxTime = 1.5;
+const float SkylakeDriver::clutchMax = 0.5;
+const float SkylakeDriver::clutchDelta = 0.05;
+const float SkylakeDriver::clutchRange = 0.82;
+const float SkylakeDriver::clutchDeltaTime = 0.02;
+const float SkylakeDriver::clutchDeltaRaced = 10;
+const float SkylakeDriver::clutchDec = 0.01;
+const float SkylakeDriver::clutchMaxModifier = 1.3;
+const float SkylakeDriver::clutchMaxTime = 1.5;
 
-SkylakeDriver::SkylakeDriver() {
+SkylakeDriver::SkylakeDriver() : control(0, 0, 0, 0, 0) {
     stuck = 0;
     clutch = 0.0;
+    x = 0;
+    y = 0;
+    angle = 0;
+}
+double convert_wheel_speed_to_distance(float speed_rad_s, double factor) {
+    double speed_m_s = speed_rad_s * SkylakeConsts::WHEEL_FRONT_RADIUS;
+    return factor * speed_m_s;
 }
 
 CarControl SkylakeDriver::wDrive(CarState cs) {
-    printf("%7.2f %7.2f\n", cs.getSpeedTH(), cs.getYaw());
 
     // compute acceleration/brake command
-    float accel_and_brake = getAccel(cs);
+    //float accel_and_brake = getAccel(cs);
     // compute gear
     int gear = getGear(cs);
     // compute steering
@@ -57,23 +64,55 @@ CarControl SkylakeDriver::wDrive(CarState cs) {
     if (steer > 1)
         steer = 1;
 
-    // set accel and brake from the joint accel/brake command
-    float accel, brake;
-    if (accel_and_brake > 0) {
-        accel = accel_and_brake;
-        brake = 0;
+    float accel = control.getAccel(), brake = control.getBrake();
+    if (cs.getSpeedX() < 120) {
+        accel += 0.1;
     } else {
-        accel = 0;
-        // apply ABS to brake
-        brake = filterABS(cs, -accel_and_brake);
+        accel -= 0.1;
     }
+    accel = accel < 0.0 ? 0 : accel;
+    accel = accel > 1 ? 1 : accel;
 
-    // Calculate clutching
-    clutching(cs, clutch);
+    static double last_distance = 0;
+    double distance = cs.getDistRaced() - last_distance;
+
+    static float last_steer = 0;
+    last_distance = cs.getDistRaced();
+
+    double speed_norm = sqrt(pow(cs.getSpeedX(), 2) + pow(cs.getSpeedY(), 2) + pow(cs.getSpeedZ(), 2));
+    double speed_norm_m_per_s = speed_norm / 3.6;
+
+    double factor = distance / speed_norm_m_per_s;
+    printf("%7.4f\n", factor);
+
+    double distance_right_wheel = convert_wheel_speed_to_distance(cs.getWheelSpinVel(0), factor);
+    double distance_left_wheel = convert_wheel_speed_to_distance(cs.getWheelSpinVel(1), factor);
+
+
+    double dist = (cs.getSpeedX() / 3.6) * 0.02;//(distance_right_wheel + distance_left_wheel) / 2.0;
+    double turn_angle = dist * tan(last_steer);
+    last_steer = steer;
+    if (abs(turn_angle) <= 0.0000001) {
+        cout << "Front?" << endl;
+    } else {
+        /*double beta = dist * tan(last_steer);
+        double radius = dist / beta;
+*/
+        //angle += (dist/4.52) * atan(cs.getSpeedY() / cs.getSpeedX());
+    }
+    angle += (distance_right_wheel - distance_left_wheel) / (1.68);
 
     // build a CarControl variable and return it
-    CarControl cc(accel, brake, gear, steer, clutch);
-    return cc;
+    printf("Angles: %7.4f %7.4f %7.4f: S: %7.4f %7.4f %7.4f\n", (cs.getYaw() * 180.0) / M_PI, (angle * 180.0) / M_PI, (steer * 180.0) / M_PI, cs.getSpeedX(), cs.getSpeedY(), cs.getSpeedZ());
+    //printf("Distances: %7.4f %7.4f %9.6f\n", dist, distance, distance / dist);
+
+    control.setAccel(accel);
+    control.setBrake(brake);
+    control.setGear(gear);
+    control.setSteer(steer);
+    control.setClutch(clutch);
+    //CarControl cc(accel, brake, gear, steer, clutch);
+    return control;
 }
 
 int SkylakeDriver::getGear(CarState &cs) {
@@ -97,7 +136,7 @@ int SkylakeDriver::getGear(CarState &cs) {
         return gear;
 }
 
-double SkylakeDriver::getSteer(CarState &cs) {
+float SkylakeDriver::getSteer(CarState &cs) {
     // steering angle is compute by correcting the actual car angle w.r.t. to track
     // axis [cs.getAngle()] and to adjust car position w.r.t to middle of track [cs.getTrackPos()*0.5]
     double targetAngle = (cs.getAngle() - cs.getTrackPos() * 0.5);
@@ -186,7 +225,7 @@ void SkylakeDriver::onRestart() {
     cout << "Restarting the race!" << endl;
 }
 
-void SimpleDriver::clutching(CarState &cs, float &clutch) {
+void SkylakeDriver::clutching(CarState &cs, float &clutch) {
     double maxClutch = clutchMax;
 
     // Check if the current situation is the race start
@@ -218,7 +257,7 @@ void SimpleDriver::clutching(CarState &cs, float &clutch) {
     }
 }
 
-void SimpleDriver::init(float *angles) {
+void SkylakeDriver::init(float *angles) {
     // set angles as {-90, -75, -60, -45, -30, -20, -15, -10, -5, 0, 5, 10, 15, 20, 30, 45, 60, 75, 90}
     for (int i = 0; i < 5; i++) {
         angles[i] = -90 + i * 15;
