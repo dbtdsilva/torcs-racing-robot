@@ -36,16 +36,9 @@ const float SkylakeDriver::clutchDec = 0.01;
 const float SkylakeDriver::clutchMaxModifier = 1.3;
 const float SkylakeDriver::clutchMaxTime = 1.5;
 
-SkylakeDriver::SkylakeDriver() : control(0, 0, 0, 0, 0) {
+SkylakeDriver::SkylakeDriver() : control(0, 0, 0, 0, 0), kinematics_() {
     stuck = 0;
     clutch = 0.0;
-    x = 0;
-    y = 0;
-    angle = 0;
-}
-double convert_wheel_speed_to_distance(float speed_rad_s, double factor) {
-    double speed_m_s = speed_rad_s * SkylakeConsts::WHEEL_FRONT_RADIUS;
-    return factor * speed_m_s;
 }
 
 CarControl SkylakeDriver::wDrive(CarState cs) {
@@ -76,36 +69,8 @@ CarControl SkylakeDriver::wDrive(CarState cs) {
     static double last_distance = 0;
     double distance = cs.getDistRaced() - last_distance;
 
-    static float last_steer = 0;
-    last_distance = cs.getDistRaced();
-
-    double speed_norm = sqrt(pow(cs.getSpeedX(), 2) + pow(cs.getSpeedY(), 2) + pow(cs.getSpeedZ(), 2));
-    double speed_norm_m_per_s = speed_norm / 3.6;
-
-    double factor = distance / speed_norm_m_per_s;
-    printf("%7.4f\n", factor);
-
-    double distance_right_wheel = convert_wheel_speed_to_distance(cs.getWheelSpinVel(0), factor);
-    double distance_left_wheel = convert_wheel_speed_to_distance(cs.getWheelSpinVel(1), factor);
-
-
-    double dist = (cs.getSpeedX() / 3.6) * 0.02;//(distance_right_wheel + distance_left_wheel) / 2.0;
-    double turn_angle = dist * tan(last_steer);
-    last_steer = steer;
-    if (abs(turn_angle) <= 0.0000001) {
-        cout << "Front?" << endl;
-    } else {
-        /*double beta = dist * tan(last_steer);
-        double radius = dist / beta;
-*/
-        //angle += (dist/4.52) * atan(cs.getSpeedY() / cs.getSpeedX());
-    }
-    angle += (distance_right_wheel - distance_left_wheel) / (1.68);
-
-    // build a CarControl variable and return it
-    printf("Angles: %7.4f %7.4f %7.4f: S: %7.4f %7.4f %7.4f\n", (cs.getYaw() * 180.0) / M_PI, (angle * 180.0) / M_PI, (steer * 180.0) / M_PI, cs.getSpeedX(), cs.getSpeedY(), cs.getSpeedZ());
-    //printf("Distances: %7.4f %7.4f %9.6f\n", dist, distance, distance / dist);
-
+    kinematics_.update_position(cs);
+    cout << kinematics_ << endl;
     control.setAccel(accel);
     control.setBrake(brake);
     control.setGear(gear);

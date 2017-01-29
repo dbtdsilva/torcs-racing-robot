@@ -23,6 +23,7 @@
 #include "CarControl.h"
 #include "SimpleParser.h"
 #include "WrapperBaseDriver.h"
+#include "Kinematics.h"
 
 using namespace std;
 
@@ -106,7 +107,7 @@ private:
 
     CarControl control;
 
-    double x, y, angle;
+    Kinematics kinematics_;
 };
 
 #endif /*SIMPLEDRIVER_H_*/

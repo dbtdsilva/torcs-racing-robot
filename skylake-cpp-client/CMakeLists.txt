@@ -22,6 +22,7 @@ ADD_EXECUTABLE(skylake
 		SkylakeDriver.cpp SkylakeDriver.h
 		SimpleParser.cpp SimpleParser.h
 		SkylakeConsts.h
+		Kinematics.cpp Kinematics.h
 		WrapperBaseDriver.cpp WrapperBaseDriver.h)
 #TARGET_LINK_LIBRARIES(skylake ${QT_LIBRARIES} ${SDL2_LIBRARIES} RobSock)
 SET_TARGET_PROPERTIES(skylake PROPERTIES COMPILE_FLAGS "-std=c++14 -O3")
