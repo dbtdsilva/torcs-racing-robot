@@ -4,7 +4,7 @@
 
 using namespace std;
 
-MapSDL2::MapSDL2(int cols, int rows, int square_precision, int square_size) : square_size_(square_size)
+MapSDL2::MapSDL2(int square_size) : square_size_(square_size)
 {
     if (SDL_Init(SDL_INIT_EVERYTHING)) return;
 
@@ -30,8 +30,8 @@ bool MapSDL2::exit_requested() {
     return false;
 }
 
-void MapSDL2::render_full_map(Map& map) {
-    std::vector<std::vector<Stats>>& raw_map = map.get_raw_reference();
+void MapSDL2::render_full_map(const Map* map) {
+    const std::vector<std::vector<Stats>>& raw_map = map->get_raw_reference();
 
     int width, height;
     SDL_GetWindowSize(window_, &width, &height);

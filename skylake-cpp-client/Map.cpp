@@ -18,7 +18,7 @@ Map::Map(int cols, int rows, int square_precision) :
 
 void Map::enable_debug() {
     if (map_debug_ == nullptr)
-        map_debug_ = make_unique<MapSDL2>(cols_, rows_, square_precision_, 4);
+        map_debug_ = make_unique<MapSDL2>(4);
 }
 
 bool Map::increase_wall_counter(const double& x, const double& y) {
@@ -78,9 +78,9 @@ void Map::evaluate_position(const int& x, const int& y) {
 
     if (map_debug_ != nullptr) {
         if (map_[x][y].state == SAFE)
-            map_debug_->set_color(x, y, 0, 255, 0, 255);
+            map_[x][y].color.set(0, 255, 0, 255);
         else if (map_[x][y].state == UNSAFE)
-            map_debug_->set_color(x, y, 0, 0, 0, 255);
+            map_[x][y].color.set(0, 0, 0, 255);
     }
 }
 
@@ -94,49 +94,42 @@ void Map::render_map() {
     }
 
     vector<tuple<int, int, Uint8, Uint8, Uint8, Uint8>> temporary_paintings;
-    std::vector<int> color;
+    Color color;
     for (auto path_node : unknown_path_) {
-        color = map_debug_->get_color(M_X(path_node), M_Y(path_node));
+        color = map_[M_X(path_node)][M_Y(path_node)].color;
         temporary_paintings.push_back(tuple<int, int, Uint8, Uint8, Uint8, Uint8>(
-                M_X(path_node), M_Y(path_node), color[0], color[1], color[2], color[3]));
-        map_debug_->set_color(M_X(path_node), M_Y(path_node), 255, 0, 255, 255);
+                M_X(path_node), M_Y(path_node), color.R, color.G, color.B, color.A));
+        map_[M_X(path_node)][M_Y(path_node)].color.set(255, 0, 255, 255);
     }
 
     for (auto path_node : known_path_) {
-        color = map_debug_->get_color(M_X(path_node), M_Y(path_node));
+        color = map_[M_X(path_node)][M_Y(path_node)].color;
         temporary_paintings.push_back(tuple<int, int, Uint8, Uint8, Uint8, Uint8>(
-                M_X(path_node), M_Y(path_node), color[0], color[1], color[2], color[3]));
-        map_debug_->set_color(M_X(path_node), M_Y(path_node), 255, 128, 0, 255);
+                M_X(path_node), M_Y(path_node), color.R, color.G, color.B, color.A));
+        map_[M_X(path_node)][M_Y(path_node)].color.set(255, 128, 0, 255);
     }
 
     // Paint the path to the objective location
     for (auto path_node : calculated_target_path_) {
-        color = map_debug_->get_color(M_X(path_node), M_Y(path_node));
+        color = map_[M_X(path_node)][M_Y(path_node)].color;
         temporary_paintings.push_back(tuple<int, int, Uint8, Uint8, Uint8, Uint8>(
-                M_X(path_node), M_Y(path_node), color[0], color[1], color[2], color[3]));
-        map_debug_->set_color(M_X(path_node), M_Y(path_node), 255, 0, 0, 255);
-    }
-    // Objective representation
-    if (ptr_objective_ != nullptr) {
-        color = map_debug_->get_color(M_X(*ptr_objective_), M_Y(*ptr_objective_));
-        map_debug_->set_color(M_X(*ptr_objective_), M_Y(*ptr_objective_), 0, 0, 204, 255);
-        temporary_paintings.push_back(tuple<int, int, Uint8, Uint8, Uint8, Uint8>(
-                M_X(*ptr_objective_), M_Y(*ptr_objective_), color[0], color[1], color[2], color[3]));
+                M_X(path_node), M_Y(path_node), color.R, color.G, color.B, color.A));
+        map_[M_X(path_node)][M_Y(path_node)].color.set(255, 0, 0, 255);
     }
     // Paint the current position
-    color = map_debug_->get_color(M_X(last_visited_pos_), M_Y(last_visited_pos_));
-    map_debug_->set_color(M_X(last_visited_pos_), M_Y(last_visited_pos_), 0, 0, 255, 255);
+    color = map_[M_X(last_visited_pos_)][M_Y(last_visited_pos_)].color;
+    map_[M_X(last_visited_pos_)][M_Y(last_visited_pos_)].color.set(0, 0, 255, 255);
     temporary_paintings.push_back(tuple<int, int, Uint8, Uint8, Uint8, Uint8>(
-            M_X(last_visited_pos_), M_Y(last_visited_pos_), color[0], color[1], color[2], color[3]));
+            M_X(last_visited_pos_), M_Y(last_visited_pos_), color.R, color.G, color.B, color.A));
 
     // Render the map
-    map_debug_->render_full_map();
+    map_debug_->render_full_map(this);
 
     // Give map the previous color before entering the current position and A*
     while (!temporary_paintings.empty()) {
-        auto value = temporary_paintings.back();
+        auto &value = temporary_paintings.back();
         temporary_paintings.pop_back();
-        map_debug_->set_color(get<0>(value), get<1>(value), get<2>(value), get<3>(value), get<4>(value), get<5>(value));
+        map_[get<0>(value)][get<1>(value)].color.set(get<2>(value), get<3>(value), get<4>(value), get<5>(value));
     }
 }
 
@@ -169,4 +162,8 @@ std::tuple<double, double> Map::convert_from_map_coordinates(const int& x, const
 
 std::tuple<double, double> Map::convert_from_map_coordinates(const std::tuple<int, int>& map_coordinates) const {
     return convert_from_map_coordinates(M_X(map_coordinates), M_Y(map_coordinates));
+}
+
+const std::vector<std::vector<Stats>> &Map::get_raw_reference() const {
+    return map_;
 }

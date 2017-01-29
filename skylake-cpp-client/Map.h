@@ -10,6 +10,12 @@ typedef enum { SAFE, UNSAFE, UNKNOWN } PositionState;
 
 typedef struct color {
     color() : R(220), G(220), B(220), A(255) {};
+    void set(Uint8 R, Uint8 G, Uint8 B, Uint8 A) {
+        this->R = R;
+        this->G = G;
+        this->B = B;
+        this->A = A;
+    }
     Uint8 R, G, B, A;
 } Color;
 
@@ -33,7 +39,7 @@ public:
     bool increase_visited_counter(const double& x, const double& y);
 
     PositionState get_position_state(const int& x, const int& y) const;
-    std::vector<std::vector<Stats>>& get_raw_reference() const;
+    const std::vector<std::vector<Stats>>& get_raw_reference() const;
 
     void enable_debug();
     void render_map();

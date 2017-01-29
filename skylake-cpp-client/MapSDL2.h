@@ -3,14 +3,15 @@
 
 #include <vector>
 #include <SDL2/SDL.h>
-#include "Map.h"
+
+class Map;
 
 class MapSDL2 {
 public:
-    MapSDL2(int rows, int cols, int square_precision, int square_size);
+    MapSDL2(int square_size);
     ~MapSDL2();
 
-    void render_full_map(Map&);
+    void render_full_map(const Map*);
     bool exit_requested();
 private:
     const int square_size_;

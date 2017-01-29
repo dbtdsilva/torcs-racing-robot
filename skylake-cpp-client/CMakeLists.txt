@@ -9,6 +9,9 @@ SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
+SET(CMAKE_C_COMPILER "gcc-5")
+SET(CMAKE_CXX_COMPILER "g++-5")
+
 #FIND_PACKAGE(Qt4 REQUIRED)
 FIND_PACKAGE(SDL2 REQUIRED)
 #INCLUDE(${QT_USE_FILE})
@@ -23,8 +26,8 @@ ADD_EXECUTABLE(skylake
 		SimpleParser.cpp SimpleParser.h
 		SkylakeConsts.h
 		Kinematics.cpp Kinematics.h
-		MapSDL2.cpp MapSDL2.h
 		Map.cpp Map.h
+		MapSDL2.cpp MapSDL2.h
 		WrapperBaseDriver.cpp WrapperBaseDriver.h)
 TARGET_LINK_LIBRARIES(skylake ${SDL2_LIBRARIES}) #${QT_LIBRARIES}
 SET_TARGET_PROPERTIES(skylake PROPERTIES COMPILE_FLAGS "-std=c++14 -O3")
