@@ -24,6 +24,7 @@
 #include "SimpleParser.h"
 #include "WrapperBaseDriver.h"
 #include "Kinematics.h"
+#include "Map.h"
 
 using namespace std;
 
@@ -106,7 +107,7 @@ private:
     void clutching(CarState &cs, float &clutch);
 
     CarControl control;
-
+    //Map map_;
     Kinematics kinematics_;
 };
 

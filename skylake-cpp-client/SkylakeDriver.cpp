@@ -39,6 +39,8 @@ const float SkylakeDriver::clutchMaxTime = 1.5;
 SkylakeDriver::SkylakeDriver() : control(0, 0, 0, 0, 0), kinematics_() {
     stuck = 0;
     clutch = 0.0;
+    //map_.enable_debug();
+    //map_.render_map();
 }
 
 CarControl SkylakeDriver::wDrive(CarState cs) {
@@ -71,12 +73,14 @@ CarControl SkylakeDriver::wDrive(CarState cs) {
 
     kinematics_.update_position(cs);
     cout << kinematics_ << endl;
+
     control.setAccel(accel);
     control.setBrake(brake);
     control.setGear(gear);
     control.setSteer(steer);
     control.setClutch(clutch);
-    //CarControl cc(accel, brake, gear, steer, clutch);
+
+    //map_.render_map();
     return control;
 }
 
@@ -109,7 +113,7 @@ float SkylakeDriver::getSteer(CarState &cs) {
     //if (cs.getSpeedX() > steerSensitivityOffset)
     //    return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
     //else
-    return targetAngle / steerLock;
+    return targetAngle / SkylakeConsts::STEER_LOCK_RAD;
 }
 
 float SkylakeDriver::getAccel(CarState &cs) {
