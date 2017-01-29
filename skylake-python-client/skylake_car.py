@@ -9,14 +9,9 @@ class SkylakeCar:
         self.client = client
         self.steer_control = SteeringControl()
         self.gear_control = GearControl()
-        self.steer_lock = 0.366519
         self.angle = 0
-        self.angle2 = 0
+        self.position = (0, 0)
         self.dist_raced = 0
-
-        self.rim_diam_mm = 457.2
-        self.wheel_radius_m = (self.rim_diam_mm / 2.0 + 255 * 0.4) * 0.001
-        self.tire_perimeter = self.wheel_radius_m * 2.0 * math.pi
 
     def drive(self):
         self.client.get_servers_input()
@@ -52,7 +47,7 @@ class SkylakeCar:
 
 
 
-        R['steer'] = angle / self.steer_lock
+        R['steer'] = angle / SkylakeCarConsts.STEER_LOCK
         R['steer'] = clip(R['steer'], -1, 1)
 
         #dcenter = (S['wheelSpinVel'][1] + S['wheelSpinVel'][0]) / 2.0
@@ -60,23 +55,28 @@ class SkylakeCar:
 
         distance_travelled = S['speedX'] * 0.02
 
-        distance = (self.convert_wheel_speed_to_distance(S['wheelSpinVel'][0]) +
-            self.convert_wheel_speed_to_distance(S['wheelSpinVel'][1])) / 2.0
+
+        distance_left_wheel = self.convert_wheel_speed_to_distance(S['wheelSpinVel'][1])
+        distance_right_wheel = self.convert_wheel_speed_to_distance(S['wheelSpinVel'][0])
+        distance = (distance_left_wheel + distance_right_wheel) / 2.0
 
 
-        self.angle += (self.convert_wheel_speed_to_distance(S['wheelSpinVel'][0]) -
-            self.convert_wheel_speed_to_distance(S['wheelSpinVel'][1])) / SkylakeCarConsts.WHEELS_DISTANCE_FRONT_M
 
-        print "%6.4f %6.4f %7.3f" % (raced_between_ticks, distance, (self.angle * 180.0) / math.pi)
+        self.position = (self.position[0] + distance * math.cos(self.angle),
+                         self.position[1] + distance * math.sin(self.angle))
+        self.angle += (distance_right_wheel - distance_left_wheel) / SkylakeCarConsts.WHEELS_DISTANCE_FRONT_M
+
+        print "%6.4f %6.4f %7.3f %9.3f %9.3f" % (raced_between_ticks, distance,
+                                                 (self.angle * 180.0) / math.pi,
+                                                 self.position[0], self.position[1])
         # Throttle Control
         if S['speedX'] < 120:  # abs(S['trackPos']) < 0.1 or
-            R['accel'] += .1
+            R['accel'] += .5
         else:
-            R['accel'] -= .1
+            R['accel'] -= .5
 
         # Traction Control System
-        if ((S['wheelSpinVel'][2] + S['wheelSpinVel'][3]) -
-                (S['wheelSpinVel'][0] + S['wheelSpinVel'][1]) > 5):
+        if ((S['wheelSpinVel'][2] + S['wheelSpinVel'][3]) - (S['wheelSpinVel'][0] + S['wheelSpinVel'][1]) > 5):
             R['accel'] -= .2
         R['accel'] = clip(R['accel'], 0, 1)
 
