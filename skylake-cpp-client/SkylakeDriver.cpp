@@ -36,6 +36,11 @@ const float SkylakeDriver::clutchDec = 0.01;
 const float SkylakeDriver::clutchMaxModifier = 1.3;
 const float SkylakeDriver::clutchMaxTime = 1.5;
 
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace cv;
+
 SkylakeDriver::SkylakeDriver() : control(0, 0, 0, 0, 0), kinematics_() {
     stuck = 0;
     clutch = 0.0;
@@ -43,7 +48,9 @@ SkylakeDriver::SkylakeDriver() : control(0, 0, 0, 0, 0), kinematics_() {
     //map_.render_map();
 }
 
-CarControl SkylakeDriver::wDrive(CarState cs) {
+CarControl SkylakeDriver::wDrive(CarState cs)
+{
+
 
     // compute acceleration/brake command
     //float accel_and_brake = getAccel(cs);
@@ -60,7 +67,7 @@ CarControl SkylakeDriver::wDrive(CarState cs) {
         steer = 1;
 
     float accel = control.getAccel(), brake = control.getBrake();
-    if (cs.getSpeedX() < 120) {
+    if (cs.getSpeedX() < 50) {
         accel += 0.1;
     } else {
         accel -= 0.1;
@@ -72,7 +79,8 @@ CarControl SkylakeDriver::wDrive(CarState cs) {
     double distance = cs.getDistRaced() - last_distance;
 
     kinematics_.update_position(cs);
-    cout << kinematics_ << endl;
+    map_.increase_visited_counter(M_X(kinematics_.get_position()), M_Y(kinematics_.get_position()));
+    //cout << kinematics_ << endl;
 
     control.setAccel(accel);
     control.setBrake(brake);
@@ -80,7 +88,20 @@ CarControl SkylakeDriver::wDrive(CarState cs) {
     control.setSteer(steer);
     control.setClutch(clutch);
 
-    //map_.render_map();
+    static int render = 0;
+    if (render++ >= 200) {
+        render = 0;
+        cout << "Rendering..." << endl;
+        map_.render_map();
+        cout << render << endl;
+    }
+    Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
+    for (int i = 0; i < 19; i++) {
+        line(histImage, Point(2*i, 0), Point(2*(i), (int)cs.getTrack(i)), Scalar(0,0,0), 1, 8, 0);
+    }
+    namedWindow("Image", CV_WINDOW_AUTOSIZE);
+    imshow("Image", histImage);
+    waitKey(1);
     return control;
 }
 

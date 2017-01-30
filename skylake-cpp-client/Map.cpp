@@ -6,14 +6,10 @@
 
 using namespace std;
 
-Map::Map() : Map(14, 7, 8) {
-}
-
-Map::Map(int cols, int rows, int square_precision) :
-        map_(cols, vector<Stats>(rows, Stats())),
-        cols_(cols), rows_(rows), square_precision_(square_precision), last_visited_pos_(convert_to_map_coordinates(0,0)),
-        ptr_objective_(nullptr), min_position(-100, -100), max_position(100, 100),
-        range_x(200), range_y(200) {
+Map::Map() : map_(1000, vector<Stats>(1000, Stats())),
+        cols_(1000), rows_(1000), square_precision_(4), last_visited_pos_(convert_to_map_coordinates(0,0)),
+        ptr_objective_(nullptr), min_position(-500, -500), max_position(500, 500),
+        range_x(1000), range_y(1000) {
 }
 
 void Map::enable_debug() {
@@ -60,7 +56,9 @@ bool Map::increase_ground_counter_range(const double& sx, const double& sy, cons
 
 bool Map::increase_visited_counter(const double& x, const double& y) {
     tuple<int, int> position = convert_to_map_coordinates(x, y);
+    //cout << "A: " << M_X(position) << ", " << M_Y(position) << endl;
     if (!validate_position(position)) return false;
+    //cout << "Valid!" << endl;
     map_[M_X(position)][M_Y(position)].visited++;
 
     M_X(last_visited_pos_) = M_X(position);
@@ -73,7 +71,8 @@ void Map::evaluate_position(const int& x, const int& y) {
     if (map_[x][y].visited > 0)
         map_[x][y].state = SAFE;
     else {
-        map_[x][y].state = map_[x][y].wall_counter <= map_[x][y].ground_counter * SkylakeConsts::MAP_SAFE_MARGIN ? SAFE : UNSAFE;
+        map_[x][y].state = map_[x][y].wall_counter <= map_[x][y].ground_counter *
+                                                              SkylakeConsts::MAP_SAFE_MARGIN ? SAFE : UNSAFE;
     }
 
     if (map_debug_ != nullptr) {
@@ -134,8 +133,8 @@ void Map::render_map() {
 }
 
 bool Map::validate_position(const int& x, const int& y) const {
-    return (x >= 0 && x < cols_ * square_precision_ * SkylakeConsts::MAP_SQUARE_SIZE &&
-            y >= 0 && y < rows_ * square_precision_ * SkylakeConsts::MAP_SQUARE_SIZE);
+    return x >= 0 && x < range_x &&
+           y >= 0 && y < range_y;
 }
 
 bool Map::validate_position(const tuple<int, int>& value) const {
@@ -151,12 +150,12 @@ std::tuple<int, int> Map::convert_to_map_coordinates(const std::tuple<double, do
 }
 
 std::tuple<int, int> Map::convert_to_map_coordinates(const double& x, const double& y) const {
-    return tuple<int, int>(static_cast<int>(round(x * (square_precision_ / SkylakeConsts::MAP_SQUARE_SIZE) + cols_ * square_precision_)),
-                           static_cast<int>(round(-y * (square_precision_ / SkylakeConsts::MAP_SQUARE_SIZE) + rows_ * square_precision_)));
+    return tuple<int, int>(static_cast<int>(round(x) + range_x / 2.0),
+                           static_cast<int>(round(-y)+ range_y / 2.0));
 }
 
 std::tuple<double, double> Map::convert_from_map_coordinates(const int& x, const int& y) const {
-    return tuple<double, double>(SkylakeConsts::MAP_SQUARE_SIZE * (static_cast<double>(x) / square_precision_ - cols_),
+    return tuple<double, double>((static_cast<double>(x / 10.0) / square_precision_ - cols_),
                                  -SkylakeConsts::MAP_SQUARE_SIZE * (static_cast<double>(y) / square_precision_ - rows_));
 }
 

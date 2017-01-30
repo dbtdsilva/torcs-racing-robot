@@ -86,28 +86,17 @@ private:
     static const float clutchMaxModifier;
     static const float clutchMaxTime;
 
-    // Counter of stuck steps
     int stuck;
-    // Current clutch
     float clutch;
 
-    // Solves the gear changing sub problems
     int getGear(CarState &cs);
-
-    // Solves the steering sub problems
     float getSteer(CarState &cs);
-
-    // Solves the gear changing sub problems
     float getAccel(CarState &cs);
-
-    // Apply an ABS filter to brake command
     float filterABS(CarState &cs, float brake);
-
-    // Solves the clutching sub problems
     void clutching(CarState &cs, float &clutch);
 
     CarControl control;
-    //Map map_;
+    Map map_;
     Kinematics kinematics_;
 };
 
