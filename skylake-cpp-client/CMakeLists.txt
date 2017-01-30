@@ -19,18 +19,18 @@ FIND_PACKAGE(SDL2 REQUIRED)
 #INCLUDE(${QT_USE_FILE})
 INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
 
-ADD_EXECUTABLE(skylake 
-		client.cpp
-		BaseDriver.h
-		CarControl.cpp CarControl.h
-		CarState.cpp CarState.h
-		SkylakeDriver.cpp SkylakeDriver.h
-		SimpleParser.cpp SimpleParser.h
-		SkylakeConsts.h
-		Kinematics.cpp Kinematics.h
-		Map.cpp Map.h
-		MapSDL2.cpp MapSDL2.h
-		WrapperBaseDriver.cpp WrapperBaseDriver.h)
+ADD_EXECUTABLE(skylake
+		Driver/client.cpp
+		Base/BaseDriver.h
+		Base/CarControl.cpp Base/CarControl.h
+		Base/CarState.cpp Base/CarState.h
+		Driver/SkylakeDriver.cpp Driver/SkylakeDriver.h
+		Base/SimpleParser.cpp Base/SimpleParser.h
+		Driver/SkylakeConsts.h
+		Driver/Kinematics.cpp Driver/Kinematics.h
+		Driver/Map.cpp Driver/Map.h
+		Driver/MapSDL2.cpp Driver/MapSDL2.h
+		Base/WrapperBaseDriver.cpp Base/WrapperBaseDriver.h)
 TARGET_LINK_LIBRARIES(skylake ${SDL2_LIBRARIES} ${OpenCV_LIBS}) #${QT_LIBRARIES}
 SET_TARGET_PROPERTIES(skylake PROPERTIES COMPILE_FLAGS "-std=c++14 -O3")
 

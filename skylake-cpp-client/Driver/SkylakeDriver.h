@@ -18,11 +18,11 @@
 
 #include <iostream>
 #include <cmath>
-#include "BaseDriver.h"
-#include "CarState.h"
-#include "CarControl.h"
-#include "SimpleParser.h"
-#include "WrapperBaseDriver.h"
+#include "Base/BaseDriver.h"
+#include "Base/CarState.h"
+#include "Base/CarControl.h"
+#include "Base/SimpleParser.h"
+#include "Base/WrapperBaseDriver.h"
 #include "Kinematics.h"
 #include "Map.h"
 
