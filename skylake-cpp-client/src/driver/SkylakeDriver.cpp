@@ -1,5 +1,5 @@
 #include "SkylakeDriver.h"
-#include "SkylakeConsts.h"
+#include "core/SkylakeConsts.h"
 
 /* Gear Changing Constants*/
 const int SkylakeDriver::gearUp[6] = {5000, 6000, 6000, 6500, 7000, 0};
@@ -67,7 +67,7 @@ CarControl SkylakeDriver::wDrive(CarState cs)
         steer = 1;
 
     float accel = control.getAccel(), brake = control.getBrake();
-    if (cs.getSpeedX() < 50) {
+    if (cs.getSpeedX() < 150) {
         accel += 0.1;
     } else {
         accel -= 0.1;
@@ -127,9 +127,15 @@ int SkylakeDriver::getGear(CarState &cs) {
 }
 
 float SkylakeDriver::getSteer(CarState &cs) {
+    int max_id = -1;
+    for (int i = 0; i < 19; i++) {
+        if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
+            max_id = i;
+    }
     // steering angle is compute by correcting the actual car angle w.r.t. to track
     // axis [cs.getAngle()] and to adjust car position w.r.t to middle of track [cs.getTrackPos()*0.5]
-    double targetAngle = (cs.getAngle() - cs.getTrackPos() * 0.5);
+    printf("%7.4f\n", cs.getAngle());
+    double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
     // at high speed reduce the steering command to avoid loosing the control
     //if (cs.getSpeedX() > steerSensitivityOffset)
     //    return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
@@ -259,4 +265,8 @@ void SkylakeDriver::init(float *angles) {
         angles[18 - i] = 20 - (i - 5) * 5;
     }
     angles[9] = 0;
+
+    for (int i = 0; i < 19; i++) {
+        lrf_angles_.push_back(angles[i]);
+    }
 }

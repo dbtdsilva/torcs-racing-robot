@@ -1,5 +1,5 @@
 #include "Kinematics.h"
-#include "SkylakeConsts.h"
+#include "core/SkylakeConsts.h"
 
 double convert_wheel_speed_to_distance(float speed_rad_s, double factor) {
     double speed_m_s = speed_rad_s * SkylakeConsts::WHEEL_FRONT_RADIUS;

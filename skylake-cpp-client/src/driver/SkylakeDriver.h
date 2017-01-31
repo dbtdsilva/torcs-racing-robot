@@ -83,6 +83,8 @@ private:
     CarControl control;
     Map map_;
     Kinematics kinematics_;
+
+    vector<float> lrf_angles_;
 };
 
 #endif /*SIMPLEDRIVER_H_*/
