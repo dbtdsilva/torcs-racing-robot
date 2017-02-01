@@ -18,5 +18,11 @@ public:
 
     static constexpr int MAP_SQUARE_SIZE = 4;
     static constexpr double MAP_SAFE_MARGIN = 0.2;
+
+    // Since we do not damage the engine, the gear up limit for each gear is the redline.
+    // In this car, the top torque happens after the red line for every gear shift.
+    static const int GEAR_UP[6];
+    // Those gear down were defined based on the top torque, to keep a good torque after changing the gear.
+    static const int GEAR_DOWN[6];
 };
 #endif //SKYLAKECONSTS_H

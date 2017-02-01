@@ -1,10 +1,6 @@
 #include "SkylakeDriver.h"
 #include "core/SkylakeConsts.h"
 
-/* Gear Changing Constants*/
-const int SkylakeDriver::gearUp[6] = {5000, 6000, 6000, 6500, 7000, 0};
-const int SkylakeDriver::gearDown[6] = {0, 2500, 3000, 3000, 3500, 3500};
-
 /* Stuck constants*/
 const int SkylakeDriver::stuckTime = 25;
 const float SkylakeDriver::stuckAngle = .523598775; //PI/6
@@ -50,7 +46,11 @@ SkylakeDriver::SkylakeDriver() : control(0, 0, 0, 0, 0), kinematics_() {
 
 CarControl SkylakeDriver::wDrive(CarState cs)
 {
-
+    static int speed = 25;
+    if (cs.getSpeedX() >= speed) {
+        cout << speed << " : " << cs.getDistRaced() << endl;
+        speed += 25;
+    }
 
     // compute acceleration/brake command
     //float accel_and_brake = getAccel(cs);
@@ -67,13 +67,14 @@ CarControl SkylakeDriver::wDrive(CarState cs)
         steer = 1;
 
     float accel = control.getAccel(), brake = control.getBrake();
-    if (cs.getSpeedX() < 150) {
+    /*if (cs.getSpeedX() < 150) {
         accel += 0.1;
     } else {
         accel -= 0.1;
     }
     accel = accel < 0.0 ? 0 : accel;
-    accel = accel > 1 ? 1 : accel;
+    accel = accel > 1 ? 1 : accel;*/
+    accel = 1;
 
     static double last_distance = 0;
     double distance = cs.getDistRaced() - last_distance;
@@ -91,9 +92,7 @@ CarControl SkylakeDriver::wDrive(CarState cs)
     static int render = 0;
     if (render++ >= 200) {
         render = 0;
-        cout << "Rendering..." << endl;
         map_.render_map();
-        cout << render << endl;
     }
     Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
     for (int i = 0; i < 19; i++) {
@@ -110,20 +109,28 @@ int SkylakeDriver::getGear(CarState &cs) {
     int gear = cs.getGear();
     int rpm = cs.getRpm();
 
-    // if gear is 0 (N) or -1 (R) just return 1 
     if (gear < 1)
         return 1;
     // check if the RPM value of car is greater than the one suggested 
-    // to shift up the gear from the current one     
-    if (gear < 6 && rpm >= gearUp[gear - 1])
+    // to shift up the gear from the current one
+    static bool just_changed = false;
+    if (just_changed) {
+        cout << rpm << endl;
+        just_changed = false;
+    }
+    if (gear < 6 && rpm >= SkylakeConsts::GEAR_UP[gear - 1]) {
+        cout << "UP: " << gear << ", " << rpm << endl;
+        just_changed = true;
         return gear + 1;
-    else
-        // check if the RPM value of car is lower than the one suggested
-        // to shift down the gear from the current one
-    if (gear > 1 && rpm <= gearDown[gear - 1])
+    }
+
+    // check if the RPM value of car is lower than the one suggested
+    // to shift down the gear from the current one
+    if (gear > 1 && rpm <= SkylakeConsts::GEAR_DOWN[gear - 1]) {
+        cout << "DOWN: " << gear << ", " << rpm << endl;
         return gear - 1;
-    else // otherwhise keep current gear
-        return gear;
+    }
+    return gear;
 }
 
 float SkylakeDriver::getSteer(CarState &cs) {
@@ -134,8 +141,9 @@ float SkylakeDriver::getSteer(CarState &cs) {
     }
     // steering angle is compute by correcting the actual car angle w.r.t. to track
     // axis [cs.getAngle()] and to adjust car position w.r.t to middle of track [cs.getTrackPos()*0.5]
-    printf("%7.4f\n", cs.getAngle());
-    double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
+    //printf("%7.4f\n", cs.getAngle());
+    double targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
+    //double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
     // at high speed reduce the steering command to avoid loosing the control
     //if (cs.getSpeedX() > steerSensitivityOffset)
     //    return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);

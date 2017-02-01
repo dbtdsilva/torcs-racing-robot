@@ -61,7 +61,7 @@ void FuzzyDriver::onRestart()
 /* Gear Changing Constants*/
 const int FuzzyDriver::gearUp[6] =
 {
-    5000,6000,6000,6500,7000,0
+    9900,9900,9900,9900,9900,0
 };
 const int FuzzyDriver::gearDown[6] =
 {
@@ -102,7 +102,7 @@ CarControl FuzzyDriver::wDrive(CarState cs)
     accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
     brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();*/
     gear = getGear(cs);
-    steer = getSteer(cs);
+    //steer = getSteer(cs);
 
     std::cout << '\r' << std::fixed << std::setw(7) << std::setprecision(3) << std::setfill('0')
               << "trackPos: " << trackPos << ", angle: " << angle << ", speedX: " << speedX << ", track9: "
