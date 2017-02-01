@@ -1,19 +1,19 @@
 #ifndef FUZZYRIVER_H_
 #define FUZZYRIVER_H_
 
-#include "core/WrapperBaseDriver.h"
+#include "core-common/WrapperBaseDriver.h"
 
 #include <fl/Headers.h>
 
-class FuzzyDriver : public WrapperBaseDriver
+class VFHFuzzyDriver : public WrapperBaseDriver
 {
 public:
 
     // Constructor
-    FuzzyDriver(BaseDriver::tstage stage, std::string fclFile);
+    VFHFuzzyDriver(BaseDriver::tstage stage, std::string fclFile);
 
     // Destructor
-    ~FuzzyDriver();
+    ~VFHFuzzyDriver();
 
     bool loadFCLfile();
     virtual CarControl wDrive(CarState cs);

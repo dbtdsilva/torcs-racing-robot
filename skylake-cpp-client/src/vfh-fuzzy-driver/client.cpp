@@ -1,8 +1,8 @@
-#define __DRIVER_INCLUDE__ "FuzzyDriver.h" // put here the filename of your driver header
-#define __DRIVER_CLASS__   FuzzyDriver     // put here the name of your driver class
+#define __DRIVER_INCLUDE__ "VFHFuzzyDriver.h" // put here the filename of your driver header
+#define __DRIVER_CLASS__   VFHFuzzyDriver     // put here the name of your driver class
 
 #include __DRIVER_INCLUDE__
-#include "core/SimpleParser.h"
+#include "core-common/SimpleParser.h"
 
 #ifdef _WIN32
 #define WINDOWS

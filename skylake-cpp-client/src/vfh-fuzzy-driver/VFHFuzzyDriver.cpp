@@ -4,19 +4,19 @@
 #include <iostream>
 #include <core/SkylakeConsts.h>
 
-FuzzyDriver::FuzzyDriver(BaseDriver::tstage, std::string fclFile)
+VFHFuzzyDriver::VFHFuzzyDriver(BaseDriver::tstage, std::string fclFile)
 {
     this->stage = stage;
     this->fclFile = fclFile;
     this->control_ = CarControl(0, 0, 0, 0, 0);
 }
 
-FuzzyDriver::~FuzzyDriver()
+VFHFuzzyDriver::~VFHFuzzyDriver()
 {
     delete flEngine;
 }
 
-bool FuzzyDriver::loadFCLfile()
+bool VFHFuzzyDriver::loadFCLfile()
 {
     bool fileLoaded = false;
 
@@ -30,7 +30,7 @@ bool FuzzyDriver::loadFCLfile()
     return fileLoaded;
 }
 
-void FuzzyDriver::init(float *angles)
+void VFHFuzzyDriver::init(float *angles)
 {
     // set angles as {-90,-75,-60,-45,-30,20,15,10,5,0,5,10,15,20,30,45,60,75,90}
     for (int i = 0; i < 5; i++) {
@@ -48,27 +48,27 @@ void FuzzyDriver::init(float *angles)
         lrf_angles_.push_back(angles[i]);
 }
 
-void FuzzyDriver::onShutdown()
+void VFHFuzzyDriver::onShutdown()
 {
     std::cout << std::endl << "Bye bye!" << std::endl;
 }
 
-void FuzzyDriver::onRestart()
+void VFHFuzzyDriver::onRestart()
 {
     std::cout << std::endl << "Restarting the race!" << std::endl;
 }
 
 /* Gear Changing Constants*/
-const int FuzzyDriver::gearUp[6] =
+const int VFHFuzzyDriver::gearUp[6] =
 {
     9900,9900,9900,9900,9900,0
 };
-const int FuzzyDriver::gearDown[6] =
+const int VFHFuzzyDriver::gearDown[6] =
 {
     0,2500,3000,3000,3500,3500
 };
 
-CarControl FuzzyDriver::wDrive(CarState cs)
+CarControl VFHFuzzyDriver::wDrive(CarState cs)
 {
     int   gear   = 0; // {-1,..,6}
     float steer  = 0; // [-1,1]
@@ -118,7 +118,7 @@ CarControl FuzzyDriver::wDrive(CarState cs)
     return control_;
 }
 
-int FuzzyDriver::getGear(CarState &cs)
+int VFHFuzzyDriver::getGear(CarState &cs)
 {
     int gear = cs.getGear();
     int rpm = cs.getRpm();
@@ -139,7 +139,7 @@ int FuzzyDriver::getGear(CarState &cs)
             return gear;
 }
 
-float FuzzyDriver::getSteer(CarState &cs) {
+float VFHFuzzyDriver::getSteer(CarState &cs) {
     int max_id = -1;
     for (int i = 0; i < 19; i++) {
         if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))

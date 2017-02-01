@@ -1,7 +1,7 @@
 #ifndef FUZZYRIVER_H_
 #define FUZZYRIVER_H_
 
-#include "core/WrapperBaseDriver.h"
+#include "core-common/WrapperBaseDriver.h"
 
 #include <fl/Headers.h>
 

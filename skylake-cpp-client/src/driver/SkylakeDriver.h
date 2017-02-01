@@ -3,11 +3,11 @@
 
 #include <iostream>
 #include <cmath>
-#include "core/BaseDriver.h"
-#include "core/CarState.h"
-#include "core/CarControl.h"
-#include "core/SimpleParser.h"
-#include "core/WrapperBaseDriver.h"
+#include "core-common/BaseDriver.h"
+#include "core-common/CarState.h"
+#include "core-common/CarControl.h"
+#include "core-common/SimpleParser.h"
+#include "core-common/WrapperBaseDriver.h"
 #include "Kinematics.h"
 #include "Map.h"
 
