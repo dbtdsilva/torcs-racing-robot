@@ -3,9 +3,9 @@ FUNCTION_BLOCK driver
 VAR_INPUT
   trackPos: REAL;
   angle: REAL;
+  maxAngle: REAL;
   distMaxAngle: REAL;
   speedX: REAL;
-  maxAngle: REAL;
 END_VAR
 
 VAR_OUTPUT
@@ -30,6 +30,14 @@ FUZZIFY angle
   TERM right := Trapezoid 0.000 0.900 3.150 3.150;
 END_FUZZIFY
 
+FUZZIFY maxAngle
+  ENABLED : TRUE;
+  RANGE := (-3.150 .. 3.150);
+  TERM left := Trapezoid -3.150 -3.150 -0.900 0.000;
+  TERM center := Trapezoid -0.900 0.000 0.000 0.900;
+  TERM right := Trapezoid 0.000 0.900 3.150 3.150;
+END_FUZZIFY
+
 FUZZIFY distMaxAngle
   ENABLED : TRUE;
   RANGE := (-1.000 .. 200.000);
@@ -44,11 +52,6 @@ FUZZIFY speedX
   TERM f_slow := Trapezoid 0.000 0.000 15.000 30.000;
   TERM f_fast := Trapezoid 15.000 30.000 100.000 130.000;
   TERM f_very_fast := Trapezoid 100.000 130.000 300.000 300.000;
-END_FUZZIFY
-
-FUZZIFY maxAngle
-  ENABLED : TRUE;
-  RANGE := (-3.150 .. 3.150);
 END_FUZZIFY
 
 DEFUZZIFY steer
@@ -88,12 +91,13 @@ RULEBLOCK
   AND : MIN;
   OR : MAX;
   ACT : MIN;
-  RULE 1 : if trackPos is left then steer is turn_right
-  RULE 2 : if trackPos is center then steer is stay_center
-  RULE 3 : if trackPos is right then steer is turn_left
-  RULE 4 : if angle is left then steer is turn_right
-  RULE 5 : if angle is center then steer is stay_center
-  RULE 6 : if angle is right then steer is turn_left
+  RULE 1 : if maxAngle is left then steer is turn_right
+  RULE 2 : if maxAngle is center then steer is stay_center
+  RULE 3 : if maxAngle is right then steer is turn_left
+  RULE 4 : if distMaxAngle is near and speedX is f_fast then accel is nogas;
+  RULE 5 : if distMaxAngle is far and speedX is f_slow then accel is fullgas and brake is nobrake;
+  RULE 6 : if distMaxAngle is outside then accel is medgas and brake is nobrake;
+  RULE 7 : if distMaxAngle is near and speedX is f_very_fast then accel is nogas and brake is fullbrake;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

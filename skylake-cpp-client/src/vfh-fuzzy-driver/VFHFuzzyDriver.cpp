@@ -30,44 +30,53 @@ bool VFHFuzzyDriver::loadFCLfile(std::string fclFile)
 
 CarControl VFHFuzzyDriver::wDrive(CarState cs)
 {
-    int   gear   = 0; // {-1,..,6}
-    float steer  = 0; // [-1,1]
-    float clutch = 0; // [0,1]
-    int   meta   = 0; // {0,1}
-    int   focus  = 0; // [-90,90]
+    int gear = 0; // {-1,.., 6}
+    float steer = 0; // [-1, 1]
+    float clutch = 0; // [0, 1]
+    int meta = 0; // {0, 1}
+    int focus = 0; // [-90, 90]
+    float accel = 0; // [0, 1]
+    float brake = 0; // [0, 1]
 
-    float trackPos = cs.getTrackPos();
-    float angle = cs.getAngle();
-    float track9 = cs.getTrack(9);
-    float speedX = cs.getSpeedX();
+    float trackPos = cs.getTrackPos(); // [-1, 1]
+    float angle = cs.getAngle(); // [-3.15, 3.15]
+    //float track9 = cs.getTrack(9); // [0, 200.0]
+    float speedX = cs.getSpeedX(); // [0, inf]
 
+    int max_id = -1;
+    for (int i = 0; i < 19; i++) {
+        if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
+            max_id = i;
+    }
+    double max_angle = -(lrf_angles_[max_id] * M_PI) / 180.0; // [-3.15, 3.15]
+    float dist_max_angle = cs.getTrack(max_id);
 
-    float accel = control_.getAccel(), brake = control_.getBrake();
-    if (cs.getSpeedX() < 150) {
+    //float accel = control_.getAccel(), brake = control_.getBrake();
+    /*if (cs.getSpeedX() < 150) {
         accel += 0.1;
     } else {
         accel -= 0.1;
     }
     accel = accel < 0.0 ? 0 : accel;
-    accel = accel > 1 ? 1 : accel;
+    accel = accel > 1 ? 1 : accel;*/
 
-    /*flEngine->setInputValue("trackPos", trackPos);
     flEngine->setInputValue("angle", angle);
-    flEngine->setInputValue("track9", track9);
+    flEngine->setInputValue("trackPos", trackPos);
     flEngine->setInputValue("speedX", speedX);
+    flEngine->setInputValue("maxAngle", max_angle);
+    flEngine->setInputValue("distMaxAngle", dist_max_angle);
 
     flEngine->process();
 
     steer = (float)flEngine->getOutputVariable("steer")->getOutputValue();
     accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
-    brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();*/
+    brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();
     gear = getGear(cs);
-    steer = getSteer(cs);
+    //steer = getSteer(cs);
 
     std::cout << '\r' << std::fixed << std::setw(7) << std::setprecision(3) << std::setfill('0')
-              << "trackPos: " << trackPos << ", angle: " << angle << ", speedX: " << speedX << ", track9: "
-              << track9 << ", steer: " << steer << ", accel: " << accel << ", brake: " << brake << std::flush;
-
+              << "trackPos: " << trackPos << ", angle: " << angle << ", speedX: " << speedX << ", maxAngle: "
+              << max_angle << ", steer: " << steer << ", accel: " << accel << ", brake: " << brake << std::flush;
     control_.setAccel(accel);
     control_.setBrake(brake);
     control_.setGear(gear);
@@ -79,14 +88,11 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 }
 
 float VFHFuzzyDriver::getSteer(CarState &cs) {
-    int max_id = -1;
-    for (int i = 0; i < 19; i++) {
-        if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
-            max_id = i;
-    }
+
     // steering angle is compute by correcting the actual car angle w.r.t. to track
     // axis [cs.getAngle()] and to adjust car position w.r.t to middle of track [cs.getTrackPos()*0.5]
-    double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
+    //double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
+    double targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
     // at high speed reduce the steering command to avoid loosing the control
     //if (cs.getSpeedX() > steerSensitivityOffset)
     //    return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
