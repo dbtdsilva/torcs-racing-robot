@@ -1,56 +1,43 @@
-#define __DRIVER_INCLUDE__ "FuzzyDriver.h" // put here the filename of your driver header
-#define __DRIVER_CLASS__   FuzzyDriver     // put here the name of your driver class
-
-#include __DRIVER_INCLUDE__
-#include "core-common/SimpleParser.h"
-
-#ifdef _WIN32
-#define WINDOWS
-#endif
-
-#ifdef WINDOWS
-#include <WinSock.h>
-#else
 #include <netdb.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#endif
 
 #include <chrono>
 #include <iostream>
 #include <thread>
 #include <vector>
 
+#include <iostream>
+#include <core-common/BaseDriver.h>
+#include "FuzzyDriver.h"
+#include <string.h>
 
-/*** defines for UDP *****/
 #define UDP_MSGLEN 1000
 #define UDP_CLIENT_TIMEUOT 1000000
 //#define __UDP_CLIENT_VERBOSE__
 
-#ifdef WINDOWS
-typedef sockaddr_in tSockAddrIn;
-#define CLOSE(x) closesocket(x)
-#define INVALID(x) x == INVALID_SOCKET
-#else
 typedef int SOCKET;
 typedef struct sockaddr_in tSockAddrIn;
 #define CLOSE(x) close(x)
 #define INVALID(x) x < 0
-#endif
 
-#include <string.h>
+class FuzzyDriver;
+typedef FuzzyDriver tDriver;
 
-class __DRIVER_CLASS__;
-typedef __DRIVER_CLASS__ tDriver;
+using namespace std;
 
-void parse_args(int argc, char *argv[], std::string &serverName, unsigned int &serverPort, 
-    std::string &driverId, std::string &trackName, BaseDriver::tstage &stage, 
-    unsigned int &maxEpisodes, unsigned int &maxSteps, std::string &fclFile)
+//void parse_args(int argc, char *argv[], char *hostName, unsigned int &serverPort, char *id, unsigned int &maxEpisodes,
+//      unsigned int &maxSteps, bool &noise, double &noiseAVG, double &noiseSTD, long &seed, char *trackName,
+//      BaseDriver::tstage &stage);
+void parse_args(int argc, char *argv[], std::string &serverName, unsigned int &serverPort,
+                std::string &driverId, std::string &trackName, BaseDriver::tstage &stage,
+                unsigned int &maxEpisodes, unsigned int &maxSteps, std::string &fclFile)
 {
     // Set default values
     serverName  = "localhost";
     serverPort  = 3001;
-    driverId    = "SCR_Fuzzy";
+    driverId    = "SCR";
+
     trackName   = "unknown";
     maxEpisodes = 0;
     maxSteps    = 0;
@@ -90,16 +77,11 @@ void parse_args(int argc, char *argv[], std::string &serverName, unsigned int &s
 
         else if (args[i].find("fcl:") == 0)
             fclFile = args[i].substr(4);
-        
+
         i++;
     }
 }
-
-
-int main(int argc, char *argv[])
-{
-    // ---------------------------- config init ----------------------------
-
+int main(int argc, char *argv[]) {
     std::string  serverName;
     unsigned int serverPort;
     std::string  driverId;
@@ -117,19 +99,19 @@ int main(int argc, char *argv[])
     std::cout << " * server port:  " << serverPort << std::endl;
     std::cout << " * driver id     " << driverId   << std::endl;
     std::cout << " * track name:   " << trackName  << std::endl;
-    
+
     std::string switchStage;
 
     switch (stage)
     {
-    case BaseDriver::WARMUP:
-        switchStage = "warm-up" ; break;
-    case BaseDriver::QUALIFYING:
-        switchStage = "qualifying"; break;
-    case BaseDriver::RACE:
-        switchStage = "race"; break;
-    default:
-        switchStage = "unknown";
+        case BaseDriver::WARMUP:
+            switchStage = "warm-up" ; break;
+        case BaseDriver::QUALIFYING:
+            switchStage = "qualifying"; break;
+        case BaseDriver::RACE:
+            switchStage = "race"; break;
+        default:
+            switchStage = "unknown";
     }
 
     std::cout << " * stage:        " << switchStage << std::endl;;
@@ -149,7 +131,7 @@ int main(int argc, char *argv[])
     char   buf[UDP_MSGLEN];
 
 
-#ifdef WINDOWS 
+#ifdef WINDOWS
     /* WinSock startup */
 
     WSADATA wsaData = { 0 };
@@ -181,185 +163,124 @@ int main(int argc, char *argv[])
     // Set some fields in the serverAddress structure.
     serverAddress.sin_family = hostInfo->h_addrtype;
     memcpy((char *)&serverAddress.sin_addr.s_addr,
-        hostInfo->h_addr_list[0], hostInfo->h_length);
+           hostInfo->h_addr_list[0], hostInfo->h_length);
     serverAddress.sin_port = htons(serverPort);
 
-    // ---------------------------- driver init ----------------------------
+    tDriver d;
+    strcpy(d.trackName, trackName.c_str());
+    d.stage = stage;
 
-    tDriver d(stage, fclFile);
-
-    if (!d.loadFCLfile())
-    {
+    if (!d.loadFCLfile(std::string(fclFile))) {
         std::cerr << "Cannot load FCL file" << std::endl;
         exit(1);
     }
 
     bool shutdownClient = false;
     unsigned long curEpisode = 0;
-
-    // -------------------------- UDP client loop --------------------------
-
-    do
-    {
-        // Initialising driver on the server
-
-        bool already_reconnecting = false;
-
-        do
-        {
-            // Set angles of rangefinders
+    do {
+        do {
+            // Initialize the angles of rangefinders
             float angles[19];
             d.init(angles);
-            std::string initString = SimpleParser::stringify(std::string("init"), angles, 19);
+            string initString = SimpleParser::stringify(string("init"), angles, 19);
+            cout << "Sending id to server: " << driverId << endl;
             initString.insert(0, driverId);
-
-#ifdef _DEBUG
-            std::cout << "Sending init: " << initString << std::endl;
-#endif
-
-            if (sendto(socketDescriptor, initString.c_str(), (int)initString.length(), 0,
-                (struct sockaddr *) &serverAddress,
-                sizeof(serverAddress)) < 0)
-            {
-                std::cerr << "Cannot send data" << std::endl;
+            cout << "Sending init string to the server: " << initString << endl;
+            if (sendto(socketDescriptor, initString.c_str(), initString.length(), 0,
+                       (struct sockaddr *) &serverAddress,
+                       sizeof(serverAddress)) < 0) {
+                cerr << "cannot send data ";
                 CLOSE(socketDescriptor);
                 exit(1);
             }
 
-            // Wait until answer comes back, for up to UDP_CLIENT_TIMEUOT micro sec
+            // wait until answer comes back, for up to UDP_CLIENT_TIMEOUT micro sec
             FD_ZERO(&readSet);
             FD_SET(socketDescriptor, &readSet);
             timeVal.tv_sec = 0;
             timeVal.tv_usec = UDP_CLIENT_TIMEUOT;
 
-            if (select((int)(socketDescriptor + 1), &readSet, NULL, NULL, &timeVal))
-            {
-                // Read data sent by the solorace server
-                memset(buf, 0x0, UDP_MSGLEN);  // Zero out the buffer.
+            if (select(socketDescriptor + 1, &readSet, NULL, NULL, &timeVal)) {
+                // Read data sent by the server
+                memset(buf, 0x0, UDP_MSGLEN);  // Zero out the buffer
                 numRead = recv(socketDescriptor, buf, UDP_MSGLEN, 0);
-                if (numRead < 0)
-                {
-                    if (!already_reconnecting)
-                    {
-                        already_reconnecting = true;
-                        std::cerr << "Didn't get response from server. Reconnecting...";
-                    }
-                    else
-                        std::cerr << ".";
+                if (numRead < 0) {
+                    cerr << "Didn't get response from server.";
+                } else {
+                    cout << "Received: " << buf << endl;
 
-                    std::this_thread::sleep_for(std::chrono::seconds(1));
-                }
-                else
-                {
-                    if (already_reconnecting)
-                        std::cout << std::endl;
-
-                    if (std::string(buf) == "***identified***")
-                    {
-#ifdef _DEBUG
-                        std::cout << "Driver identified" << std::endl;
-#endif
+                    if (strcmp(buf, "***identified***") == 0)
                         break;
-                    }
-#ifdef __UDP_CLIENT_VERBOSE__
-                    else
-                        std::cout << "Received: " << buf << std::endl;
-#endif
                 }
             }
-
-        } while (true);
+        } while (1);
 
         unsigned long currentStep = 0;
 
-        // Controlling the driver
-
-        while (true)
-        {
-            // Wait until answer comes back, for up to UDP_CLIENT_TIMEUOT micro sec
+        while (1) {
+            // wait until answer comes back, for up to UDP_CLIENT_TIMEOUT micro sec
             FD_ZERO(&readSet);
             FD_SET(socketDescriptor, &readSet);
             timeVal.tv_sec = 0;
             timeVal.tv_usec = UDP_CLIENT_TIMEUOT;
 
-            if (select((int)(socketDescriptor + 1), &readSet, NULL, NULL, &timeVal))
-            {
-                // Read data sent by the solorace server
-                memset(buf, 0x0, UDP_MSGLEN);
+            if (select(socketDescriptor + 1, &readSet, NULL, NULL, &timeVal)) {
+                memset(buf, 0x0, UDP_MSGLEN);  // Zero out the buffer
                 numRead = recv(socketDescriptor, buf, UDP_MSGLEN, 0);
-                if (numRead < 0)
-                {
-                    std::cerr << "Didn't get response from server?" << std::endl;
+                if (numRead < 0) {
+                    cerr << "didn't get response from server?";
                     CLOSE(socketDescriptor);
                     exit(1);
                 }
 
 #ifdef __UDP_CLIENT_VERBOSE__
-                std::cout << "Received: " << buf << std::endl;
+                cout << "Received: " << buf << endl;
 #endif
 
-                if (std::string(buf) == "***shutdown***")
-                {
-#ifdef _DEBUG
-                    std::cout << std::endl << "Client shutdown" << std::endl;
-#endif
-
+                if (strcmp(buf, "***shutdown***") == 0) {
                     d.onShutdown();
                     shutdownClient = true;
+                    cout << "Client Shutdown" << endl;
                     break;
                 }
 
-                if (std::string(buf) == "***restart***")
-                {
-#ifdef _DEBUG
-                    std::cout << std::endl << "Client restart" << std::endl;
-#endif
-
+                if (strcmp(buf, "***restart***") == 0) {
                     d.onRestart();
+                    cout << "Client Restart" << endl;
                     break;
                 }
 
-                // Compute The Action to send to the solorace sever
-
-                if ((++currentStep) != maxSteps)
-                {
-                    std::string action = d.drive(std::string(buf));
+                if ((++currentStep) != maxSteps) {
+                    string action = d.drive(string(buf));
                     memset(buf, 0x0, UDP_MSGLEN);
-                    snprintf(buf, UDP_MSGLEN, "%s", action.c_str());
-                }
-                else
-                {
-                    memset(buf, 0x0, UDP_MSGLEN);
-                    snprintf(buf, UDP_MSGLEN, "(meta 1)");
-                }
+                    sprintf(buf, "%s", action.c_str());
+                } else
+                    sprintf(buf, "(meta 1)");
 
-                if (sendto(socketDescriptor, buf, (int)(strlen(buf) + 1), 0,
-                    (struct sockaddr *) &serverAddress,
-                    sizeof(serverAddress)) < 0)
-                {
-                    std::cerr << "Cannot send data" << std::endl;
+                if (sendto(socketDescriptor, buf, strlen(buf) + 1, 0,
+                           (struct sockaddr *) &serverAddress,
+                           sizeof(serverAddress)) < 0) {
+                    cerr << "cannot send data ";
                     CLOSE(socketDescriptor);
                     exit(1);
                 }
 #ifdef __UDP_CLIENT_VERBOSE__
                 else
-                    std::cout << "Sending " << buf << std::endl;
+                    cout << "Sending " << buf << endl;
 #endif
-            }
-            else
-            {
-                //std::cout << "* Server did not respond in 1 second" << std::endl;
+            } else {
+                cout << "** Server did not respond in 1 second.\n";
             }
         }
     } while (shutdownClient == false && ((++curEpisode) != maxEpisodes));
 
     if (shutdownClient == false)
         d.onShutdown();
-
     CLOSE(socketDescriptor);
-#ifdef WINDOWS
-    WSACleanup();
-#endif
-
     return 0;
+
 }
+
+//void parse_args(int argc, char *argv[], char *hostName, unsigned int &serverPort, char *id, unsigned int &maxEpisodes,
+//		  unsigned int &maxSteps,bool &noise, double &noiseAVG, double &noiseSTD, long &seed, char *trackName,
+//        BaseDriver::tstage &stage)

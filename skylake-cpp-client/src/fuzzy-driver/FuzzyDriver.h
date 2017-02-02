@@ -6,40 +6,15 @@
 #include <fl/Headers.h>
 #include <core/SkylakeBaseDriver.h>
 
-class FuzzyDriver : public WrapperBaseDriver {
+class FuzzyDriver : public SkylakeBaseDriver {
 public:
-
-    // Constructor
-    FuzzyDriver(BaseDriver::tstage stage, std::string fclFile);
-
-    // Destructor
+    FuzzyDriver();
     ~FuzzyDriver();
 
-    // Load FCL file
-    bool loadFCLfile();
-
-    // FuzzyDriver implements a simple and heuristic controller for driving
+    bool loadFCLfile(std::string fcFile);
     virtual CarControl wDrive(CarState cs);
-
-    // Print a shutdown message 
-    virtual void onShutdown();
-
-    // Print a restart message 
-    virtual void onRestart();
-
-    // Initialization of the desired angles for the rangefinders
-    virtual void init(float *angles);
-
-    static const int gearUp[6];
-    static const int gearDown[6];
-
-    // Solves the gear changing subproblems
-    int getGear(CarState &cs);
-
 private:
-
     std::string fclFile;
-
     fl::Engine *flEngine;
 };
 

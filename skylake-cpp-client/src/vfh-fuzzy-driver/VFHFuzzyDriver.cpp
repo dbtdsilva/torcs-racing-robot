@@ -4,10 +4,8 @@
 #include <iostream>
 #include <core/SkylakeConsts.h>
 
-VFHFuzzyDriver::VFHFuzzyDriver(BaseDriver::tstage, std::string fclFile)
+VFHFuzzyDriver::VFHFuzzyDriver()
 {
-    this->stage = stage;
-    this->fclFile = fclFile;
     this->control_ = CarControl(0, 0, 0, 0, 0);
 }
 
@@ -16,7 +14,7 @@ VFHFuzzyDriver::~VFHFuzzyDriver()
     delete flEngine;
 }
 
-bool VFHFuzzyDriver::loadFCLfile()
+bool VFHFuzzyDriver::loadFCLfile(std::string fclFile)
 {
     bool fileLoaded = false;
 
@@ -29,44 +27,6 @@ bool VFHFuzzyDriver::loadFCLfile()
 
     return fileLoaded;
 }
-
-void VFHFuzzyDriver::init(float *angles)
-{
-    // set angles as {-90,-75,-60,-45,-30,20,15,10,5,0,5,10,15,20,30,45,60,75,90}
-    for (int i = 0; i < 5; i++) {
-        angles[i] = (float)(-90 + i * 15);
-        angles[18 - i] = (float)(90 - i * 15);
-    }
-
-    for (int i = 5; i < 9; i++) {
-        angles[i] = (float)(-20 + (i - 5) * 5);
-        angles[18 - i] = (float)(20 - (i - 5) * 5);
-    }
-    angles[9] = 0;
-
-    for (int i = 0; i < 19; i++)
-        lrf_angles_.push_back(angles[i]);
-}
-
-void VFHFuzzyDriver::onShutdown()
-{
-    std::cout << std::endl << "Bye bye!" << std::endl;
-}
-
-void VFHFuzzyDriver::onRestart()
-{
-    std::cout << std::endl << "Restarting the race!" << std::endl;
-}
-
-/* Gear Changing Constants*/
-const int VFHFuzzyDriver::gearUp[6] =
-{
-    9900,9900,9900,9900,9900,0
-};
-const int VFHFuzzyDriver::gearDown[6] =
-{
-    0,2500,3000,3000,3500,3500
-};
 
 CarControl VFHFuzzyDriver::wDrive(CarState cs)
 {
@@ -101,8 +61,8 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     steer = (float)flEngine->getOutputVariable("steer")->getOutputValue();
     accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
     brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();*/
-    //gear = getGear(cs);
-    //steer = getSteer(cs);
+    gear = getGear(cs);
+    steer = getSteer(cs);
 
     std::cout << '\r' << std::fixed << std::setw(7) << std::setprecision(3) << std::setfill('0')
               << "trackPos: " << trackPos << ", angle: " << angle << ", speedX: " << speedX << ", track9: "

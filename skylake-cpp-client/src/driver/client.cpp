@@ -206,9 +206,6 @@ int main(int argc, char *argv[]) {
     if (shutdownClient == false)
         d.onShutdown();
     CLOSE(socketDescriptor);
-#ifdef WIN32
-    WSACleanup();
-#endif
     return 0;
 
 }

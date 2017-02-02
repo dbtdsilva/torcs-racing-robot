@@ -73,20 +73,15 @@ CarControl SkylakeDriver::wDrive(CarState cs)
 }
 
 float SkylakeDriver::getSteer(CarState &cs) {
+    double targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
+    /*
     int max_id = -1;
     for (int i = 0; i < 19; i++) {
         if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
             max_id = i;
     }
-    // steering angle is compute by correcting the actual car angle w.r.t. to track
-    // axis [cs.getAngle()] and to adjust car position w.r.t to middle of track [cs.getTrackPos()*0.5]
-    //printf("%7.4f\n", cs.getAngle());
-    double targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
-    //double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
-    // at high speed reduce the steering command to avoid loosing the control
-    //if (cs.getSpeedX() > steerSensitivityOffset)
-    //    return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
-    //else
+    double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
+    */
     return targetAngle / SkylakeConsts::STEER_LOCK_RAD;
 }
 
