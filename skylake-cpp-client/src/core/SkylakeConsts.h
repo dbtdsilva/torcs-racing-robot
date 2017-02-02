@@ -19,6 +19,15 @@ public:
     static constexpr int MAP_SQUARE_SIZE = 4;
     static constexpr double MAP_SAFE_MARGIN = 0.2;
 
+    static constexpr float CLUTCH_MAX = 0.5;
+    static constexpr float CLUTCH_DELTA = 0.05;
+    static constexpr float clutchRange = 0.82;
+    static constexpr float CLUTCH_DELTA_TIME = 0.02;
+    static constexpr float CLUTCH_DELTA_RACED = 10;
+    static constexpr float CLUTCH_DEC = 0.01;
+    static constexpr float CLUTCH_MAX_MODIFIER = 1.3;
+    static constexpr float CLUTCH_MAX_TIME = 1.5;
+
     // Since we do not damage the engine, the gear up limit for each gear is the redline.
     // In this car, the top torque happens after the red line for every gear shift.
     static const int GEAR_UP[6];

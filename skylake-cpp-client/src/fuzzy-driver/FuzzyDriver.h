@@ -4,9 +4,9 @@
 #include "core-common/WrapperBaseDriver.h"
 
 #include <fl/Headers.h>
+#include <core/SkylakeBaseDriver.h>
 
-class FuzzyDriver : public WrapperBaseDriver
-{
+class FuzzyDriver : public WrapperBaseDriver {
 public:
 
     // Constructor

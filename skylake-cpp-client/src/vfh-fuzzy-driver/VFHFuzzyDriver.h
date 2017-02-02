@@ -4,6 +4,7 @@
 #include "core-common/WrapperBaseDriver.h"
 
 #include <fl/Headers.h>
+#include <core/SkylakeBaseDriver.h>
 
 class VFHFuzzyDriver : public WrapperBaseDriver
 {
@@ -26,7 +27,6 @@ public:
     static const int gearUp[6];
     static const int gearDown[6];
 
-    int getGear(CarState& cs);
     float getSteer(CarState& cs);
 
 private:

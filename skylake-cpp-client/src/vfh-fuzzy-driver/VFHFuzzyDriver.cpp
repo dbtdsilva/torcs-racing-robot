@@ -101,7 +101,7 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     steer = (float)flEngine->getOutputVariable("steer")->getOutputValue();
     accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
     brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();*/
-    gear = getGear(cs);
+    //gear = getGear(cs);
     //steer = getSteer(cs);
 
     std::cout << '\r' << std::fixed << std::setw(7) << std::setprecision(3) << std::setfill('0')
@@ -116,27 +116,6 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     control_.setFocus(focus);
     control_.setMeta(meta);
     return control_;
-}
-
-int VFHFuzzyDriver::getGear(CarState &cs)
-{
-    int gear = cs.getGear();
-    int rpm = cs.getRpm();
-
-    // if gear is 0 (N) or -1 (R) just return 1 
-    if (gear < 1)
-        return 1;
-    // check if the RPM value of car is greater than the one suggested 
-    // to shift up the gear from the current one     
-    if (gear < 6 && rpm >= gearUp[gear - 1])
-        return gear + 1;
-    else
-        // check if the RPM value of car is lower than the one suggested 
-        // to shift down the gear from the current one
-        if (gear > 1 && rpm <= gearDown[gear - 1])
-            return gear - 1;
-        else // otherwhise keep current gear
-            return gear;
 }
 
 float VFHFuzzyDriver::getSteer(CarState &cs) {
