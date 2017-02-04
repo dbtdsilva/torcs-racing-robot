@@ -67,12 +67,14 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
     brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();
     gear = getGear(cs);
-    //steer = getSteer(cs);
+    steer = getSteer(cs);
 
+    static int cycle = 0;
     std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
-              << "trackPos: " << trackPos << ", speedX: " << speedX << ", angle: " << angle << ", maxAngle: "
-              << max_angle << ", steer: " << steer << ", accel: " << accel << ", brake: " << brake
-              << ", distFront: " << cs.getTrack(9) << ", distMaxAngle: " << dist_max_angle << std::endl;
+              << "cycle: " << cycle++ << "trackPos: " << trackPos << ", speedX: " << speedX << ", angle: " << angle
+              << ", maxAngle: " << max_angle << ", diffAngle: " << diff_angle << ", steer: " << steer << ", accel: "
+              << accel << ", brake: " << brake << ", distFront: " << cs.getTrack(9) << ", distMaxAngle: "
+              << dist_max_angle << std::endl;
     control_.setAccel(accel);
     control_.setBrake(brake);
     control_.setGear(gear);
@@ -84,11 +86,15 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 }
 
 float VFHFuzzyDriver::getSteer(CarState &cs) {
-
+    int max_id = -1;
+    for (int i = 0; i < 19; i++) {
+        if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
+            max_id = i;
+    }
     // steering angle is compute by correcting the actual car angle w.r.t. to track
     // axis [cs.getAngle()] and to adjust car position w.r.t to middle of track [cs.getTrackPos()*0.5]
-    //double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
-    double targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
+    double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
+    //double targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
     // at high speed reduce the steering command to avoid loosing the control
     //if (cs.getSpeedX() > steerSensitivityOffset)
     //    return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
