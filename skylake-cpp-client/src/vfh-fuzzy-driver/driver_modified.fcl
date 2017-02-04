@@ -1,10 +1,12 @@
 FUNCTION_BLOCK driver
 
 VAR_INPUT
-  trackPos: REAL;
   angle: REAL;
+  diffAngle: REAL;
   maxAngle: REAL;
+  distFront: REAL;
   distMaxAngle: REAL;
+  trackPos: REAL;
   speedX: REAL;
 END_VAR
 
@@ -13,14 +15,6 @@ VAR_OUTPUT
   accel: REAL;
   brake: REAL;
 END_VAR
-
-FUZZIFY trackPos
-  ENABLED : TRUE;
-  RANGE := (-9.000 .. 9.000);
-  TERM left := Trapezoid 0.300 0.600 9.000 9.000;
-  TERM center := Trapezoid -0.600 -0.300 0.300 0.600;
-  TERM right := Trapezoid -9.000 -9.000 -0.600 -0.300;
-END_FUZZIFY
 
 FUZZIFY angle
   ENABLED : TRUE;
@@ -38,6 +32,22 @@ FUZZIFY maxAngle
   TERM right := Trapezoid 0.000 0.900 3.150 3.150;
 END_FUZZIFY
 
+FUZZIFY diffAngle
+  ENABLED : TRUE;
+  RANGE := (-6.3 .. 6.3);
+  TERM left := Trapezoid -6.3 -6.3 -0.900 0.000;
+  TERM center := Trapezoid -0.900 0.000 0.000 0.900;
+  TERM right := Trapezoid 0.000 0.900 6.3 6.3;
+END_FUZZIFY
+
+FUZZIFY distFront
+  ENABLED : TRUE;
+  RANGE := (-1.000 .. 200.000);
+  TERM outside := Trapezoid -1.000 -1.000 0.000 0.000;
+  TERM near := Trapezoid 0.000 0.000 30.000 60.000;
+  TERM far := Trapezoid 30.000 60.000 200.000 200.000;
+END_FUZZIFY
+
 FUZZIFY distMaxAngle
   ENABLED : TRUE;
   RANGE := (-1.000 .. 200.000);
@@ -45,6 +55,15 @@ FUZZIFY distMaxAngle
   TERM near := Trapezoid 0.000 0.000 30.000 60.000;
   TERM far := Trapezoid 30.000 60.000 200.000 200.000;
 END_FUZZIFY
+
+FUZZIFY trackPos
+  ENABLED : TRUE;
+  RANGE := (-9.000 .. 9.000);
+  TERM left := Trapezoid 0.300 0.600 9.000 9.000;
+  TERM center := Trapezoid -0.600 -0.300 0.300 0.600;
+  TERM right := Trapezoid -9.000 -9.000 -0.600 -0.300;
+END_FUZZIFY
+
 
 FUZZIFY speedX
   ENABLED : TRUE;
@@ -94,10 +113,10 @@ RULEBLOCK
   RULE 1 : if maxAngle is left then steer is turn_right
   RULE 2 : if maxAngle is center then steer is stay_center
   RULE 3 : if maxAngle is right then steer is turn_left
-  RULE 4 : if distMaxAngle is near and speedX is f_fast then accel is nogas;
-  RULE 5 : if distMaxAngle is far and speedX is f_slow then accel is fullgas and brake is nobrake;
-  RULE 6 : if distMaxAngle is outside then accel is medgas and brake is nobrake;
-  RULE 7 : if distMaxAngle is near and speedX is f_very_fast then accel is nogas and brake is fullbrake;
+  RULE 4 : if distMaxAngle is near and speedX is f_fast then accel is nogas
+  RULE 5 : if distMaxAngle is far and speedX is f_slow then accel is fullgas and brake is nobrake
+  RULE 6 : if distMaxAngle is outside then accel is medgas and brake is nobrake
+  RULE 7 : if distMaxAngle is near and speedX is f_very_fast then accel is nogas and brake is fullbrake
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

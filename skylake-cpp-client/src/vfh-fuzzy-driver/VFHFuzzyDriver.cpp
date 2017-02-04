@@ -51,20 +51,15 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     double max_angle = -(lrf_angles_[max_id] * M_PI) / 180.0; // [-3.15, 3.15]
     float dist_max_angle = cs.getTrack(max_id);
 
-    //float accel = control_.getAccel(), brake = control_.getBrake();
-    /*if (cs.getSpeedX() < 150) {
-        accel += 0.1;
-    } else {
-        accel -= 0.1;
-    }
-    accel = accel < 0.0 ? 0 : accel;
-    accel = accel > 1 ? 1 : accel;*/
+    double diff_angle = abs(max_angle - angle);
 
     flEngine->setInputValue("angle", angle);
+    flEngine->setInputValue("maxAngle", max_angle);
+    flEngine->setInputValue("diffAngle", diff_angle);
+    flEngine->setInputValue("distFront", cs.getTrack(9));
+    flEngine->setInputValue("distMaxAngle", dist_max_angle);
     flEngine->setInputValue("trackPos", trackPos);
     flEngine->setInputValue("speedX", speedX);
-    flEngine->setInputValue("maxAngle", max_angle);
-    flEngine->setInputValue("distMaxAngle", dist_max_angle);
 
     flEngine->process();
 
@@ -74,9 +69,10 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     gear = getGear(cs);
     //steer = getSteer(cs);
 
-    std::cout << '\r' << std::fixed << std::setw(7) << std::setprecision(3) << std::setfill('0')
-              << "trackPos: " << trackPos << ", angle: " << angle << ", speedX: " << speedX << ", maxAngle: "
-              << max_angle << ", steer: " << steer << ", accel: " << accel << ", brake: " << brake << std::flush;
+    std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
+              << "trackPos: " << trackPos << ", speedX: " << speedX << ", angle: " << angle << ", maxAngle: "
+              << max_angle << ", steer: " << steer << ", accel: " << accel << ", brake: " << brake
+              << ", distFront: " << cs.getTrack(9) << ", distMaxAngle: " << dist_max_angle << std::endl;
     control_.setAccel(accel);
     control_.setBrake(brake);
     control_.setGear(gear);
