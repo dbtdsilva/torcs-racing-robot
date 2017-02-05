@@ -53,6 +53,7 @@ FUZZIFY speedX
   RANGE := (-1.000 .. 300.000);
   TERM SLOW := Triangle 0.000 0.000 208.260;
   TERM FAST := Triangle 119.900 300.000 300.000;
+  TERM TOOSLOW := Ramp 50.000 -1.000;
 END_FUZZIFY
 
 DEFUZZIFY steer
@@ -66,8 +67,10 @@ END_DEFUZZIFY
 
 DEFUZZIFY accel
   ENABLED : TRUE;
-  RANGE := (0.000 .. 1.000);
-  TERM a := Triangle 0.000 0.500 1.000;
+  RANGE := (-1.000 .. 1.000);
+  TERM FULLGAS := Ramp 0.640 1.000;
+  TERM NOGAS := Rectangle -1.000 0.000;
+  TERM NORMAL := Triangle 0.000 0.360 0.740;
   METHOD : COG;
   ACCU : MAX;
   DEFAULT := 1.000;
@@ -88,8 +91,13 @@ RULEBLOCK
   AND : MIN;
   OR : MAX;
   ACT : MIN;
-  RULE 1 : if speedX is SLOW then brake is NONACTIVE
-  RULE 2 : if speedX is FAST then brake is ACTIVE
+  RULE 1 : if speedX is TOOSLOW then accel is FULLGAS and brake is NONACTIVE
+  RULE 2 : if speedX is SLOW then brake is NONACTIVE
+  RULE 3 : if distFront is FAR then accel is FULLGAS
+  RULE 4 : if distFront is CLOSE or distFront is MEDIUM then accel is NORMAL
+  RULE 5 : if speedX is FAST and distFront is CLOSE then brake is ACTIVE
+  RULE 6 : if (maxAngle is FAR.A or maxAngle is FAR.B) and (distFront is CLOSE or distFront is MEDIUM) then brake is ACTIVE
+  RULE 7 : if distFront is CLOSE then brake is ACTIVE
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

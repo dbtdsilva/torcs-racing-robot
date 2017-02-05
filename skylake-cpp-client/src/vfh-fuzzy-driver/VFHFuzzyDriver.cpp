@@ -68,6 +68,9 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 
     gear = getGear(cs);
     steer = getSteer(cs, cs.getTrack(9) <= 0);
+    if (cs.getTrack(9) <= 20) {
+        steer *= 2;
+    }
 
     brake = brake < 0 ? 0 : brake > 1 ? 1 : brake;
     accel = accel < 0 ? 0 : accel > 1 ? 1 : accel;
@@ -76,16 +79,17 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     float filtered_brake = filterABS(cs, brake);
     float filtered_accel = filterTCL(cs, accel);
 
-    if (cs.getSpeedX() >= 140)
-        filtered_accel = 0;
-    if (cs.getSpeedX() <= 50)
-        steer /= 3;
+    //if (cs.getSpeedX() >= 140)
+    //   filtered_accel = 0;
+    //if (cs.getSpeedX() <= 50)
+    //    steer /= 3;
 
     static int cycle = 0;
     std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
-              << "cycle: " << cycle++ << ", trackPos: " << trackPos << ", speedX: " << speedX << ", angle: " << angle
-              << ", maxAngle: " << max_angle << ", diffAngle: " << diff_angle << ", steer: " << steer << ", accel: "
-              << accel << ", filtered accel: " << filtered_accel << ", brake: " << brake << ", filtered brake: "
+              << "cycle: " << cycle++ << ", distRaced: " << cs.getDistRaced() << ", trackPos: " << trackPos
+              << ", speedX: " << speedX << ", angle: " << angle << ", maxAngle: " << max_angle << ", diffAngle: "
+              << diff_angle << ", steer: " << steer << ", accel: " << accel << ", filtered accel: "
+              << filtered_accel << ", brake: " << brake << ", filtered brake: "
               << filtered_brake << ", distFront: " << cs.getTrack(9) << ", distMaxAngle: "
               << dist_max_angle << std::endl;
 
