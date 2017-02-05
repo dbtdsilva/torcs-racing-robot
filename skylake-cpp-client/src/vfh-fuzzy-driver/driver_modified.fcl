@@ -19,65 +19,47 @@ END_VAR
 FUZZIFY angle
   ENABLED : TRUE;
   RANGE := (-3.150 .. 3.150);
-  TERM left := Trapezoid -3.150 -3.150 -0.900 0.000;
-  TERM center := Trapezoid -0.900 0.000 0.000 0.900;
-  TERM right := Trapezoid 0.000 0.900 3.150 3.150;
 END_FUZZIFY
 
 FUZZIFY diffAngle
   ENABLED : TRUE;
   RANGE := (-6.300 .. 6.300);
-  TERM left := Trapezoid -6.300 -6.300 -0.900 0.000;
-  TERM center := Trapezoid -0.900 0.000 0.000 0.900;
-  TERM right := Trapezoid 0.000 0.900 6.300 6.300;
 END_FUZZIFY
 
 FUZZIFY maxAngle
   ENABLED : TRUE;
   RANGE := (-3.150 .. 3.150);
-  TERM left := Trapezoid -3.150 -3.150 -0.900 0.000;
-  TERM center := Trapezoid -0.900 0.000 0.000 0.900;
-  TERM right := Trapezoid 0.000 0.900 3.150 3.150;
 END_FUZZIFY
 
 FUZZIFY distFront
   ENABLED : TRUE;
   RANGE := (-1.000 .. 200.000);
-  TERM outside := Trapezoid -1.000 -1.000 0.000 0.000;
-  TERM near := Trapezoid 0.000 0.000 60.000 90.000;
-  TERM far := Trapezoid 60.000 90.000 200.000 200.000;
+  TERM CLOSE := Ramp 100.000 -1.000;
+  TERM MEDIUM := Triangle 50.000 110.000 160.000;
+  TERM FAR := Ramp 140.000 200.000;
 END_FUZZIFY
 
 FUZZIFY distMaxAngle
   ENABLED : TRUE;
   RANGE := (-1.000 .. 200.000);
-  TERM outside := Trapezoid -1.000 -1.000 0.000 0.000;
-  TERM near := Trapezoid 0.000 0.000 30.000 60.000;
-  TERM far := Trapezoid 30.000 60.000 200.000 200.000;
 END_FUZZIFY
 
 FUZZIFY trackPos
   ENABLED : TRUE;
-  RANGE := (-9.000 .. 9.000);
-  TERM left := Trapezoid 0.300 0.600 9.000 9.000;
-  TERM center := Trapezoid -0.600 -0.300 0.300 0.600;
-  TERM right := Trapezoid -9.000 -9.000 -0.600 -0.300;
+  RANGE := (-1.000 .. 1.000);
 END_FUZZIFY
 
 FUZZIFY speedX
   ENABLED : TRUE;
-  RANGE := (0.000 .. 300.000);
-  TERM f_slow := Trapezoid 0.000 0.000 15.000 30.000;
-  TERM f_fast := Trapezoid 15.000 30.000 100.000 130.000;
-  TERM f_very_fast := Trapezoid 100.000 130.000 300.000 300.000;
+  RANGE := (-1.000 .. 300.000);
+  TERM SLOW := Triangle 0.000 0.000 208.260;
+  TERM FAST := Triangle 119.900 300.000 300.000;
 END_FUZZIFY
 
 DEFUZZIFY steer
   ENABLED : TRUE;
   RANGE := (-1.000 .. 1.000);
-  TERM turn_left := Trapezoid 0.000 0.100 1.000 1.000;
-  TERM stay_center := Triangle -0.100 0.000 0.100;
-  TERM turn_right := Trapezoid -1.000 -1.000 -0.100 0.000;
+  TERM a := Triangle -1.000 0.000 1.000;
   METHOD : COG;
   ACCU : MAX;
   DEFAULT := 0.000;
@@ -86,9 +68,7 @@ END_DEFUZZIFY
 DEFUZZIFY accel
   ENABLED : TRUE;
   RANGE := (0.000 .. 1.000);
-  TERM nogas := Trapezoid 0.000 0.000 0.300 0.500;
-  TERM medgas := Triangle 0.100 0.200 0.300;
-  TERM fullgas := Trapezoid 0.300 0.400 1.000 1.000;
+  TERM a := Triangle 0.000 0.500 1.000;
   METHOD : COG;
   ACCU : MAX;
   DEFAULT := 1.000;
@@ -96,10 +76,10 @@ END_DEFUZZIFY
 
 DEFUZZIFY brake
   ENABLED : TRUE;
-  RANGE := (0.000 .. 1.000);
-  TERM nobrake := Triangle 0.000 0.000 0.035;
-  TERM fullbrake := Trapezoid 0.035 0.100 1.000 1.000;
-  METHOD : RM;
+  RANGE := (-1.000 .. 1.000);
+  TERM NONACTIVE := Rectangle -1.000 0.000;
+  TERM ACTIVE := SShape 0.000 1.000;
+  METHOD : COG;
   ACCU : MAX;
   DEFAULT := 0.000;
 END_DEFUZZIFY
@@ -109,13 +89,8 @@ RULEBLOCK
   AND : MIN;
   OR : MAX;
   ACT : MIN;
-  RULE 1 : if maxAngle is left then steer is turn_right
-  RULE 2 : if maxAngle is center then steer is stay_center
-  RULE 3 : if maxAngle is right then steer is turn_left
-  RULE 4 : if distFront is near and speedX is f_fast then accel is nogas
-  RULE 5 : if distFront is far and speedX is f_slow then accel is fullgas and brake is nobrake
-  RULE 6 : if distFront is outside then accel is medgas and brake is nobrake
-  RULE 7 : if distFront is near and speedX is f_very_fast then accel is nogas and brake is fullbrake
+  RULE 1 : if speedX is SLOW then brake is NONACTIVE
+  RULE 2 : if speedX is FAST and (distFront is CLOSE or distFront is MEDIUM) then brake is ACTIVE
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

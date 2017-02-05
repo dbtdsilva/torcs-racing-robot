@@ -15,7 +15,8 @@ public:
     bool loadFCLfile(std::string fclFile);
     virtual CarControl wDrive(CarState cs);
     float getSteer(CarState& cs);
-
+    float filterABS(CarState &cs, float brake);
+    float filterTCL(CarState &cs, float accel);
 private:
     CarControl control_;
     fl::Engine *flEngine;

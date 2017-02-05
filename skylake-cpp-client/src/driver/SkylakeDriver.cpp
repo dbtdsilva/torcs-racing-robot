@@ -84,5 +84,3 @@ float SkylakeDriver::getSteer(CarState &cs) {
     */
     return targetAngle / SkylakeConsts::STEER_LOCK_RAD;
 }
-
-

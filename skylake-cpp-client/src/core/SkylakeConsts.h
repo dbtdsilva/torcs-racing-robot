@@ -10,18 +10,24 @@ class SkylakeConsts {
 public:
     static constexpr double STEER_LOCK_DEGREES = 21.0;
     static constexpr double STEER_LOCK_RAD = (STEER_LOCK_DEGREES * M_PI) / 180.0;
-    static constexpr double TIRE_WIDTH = 0.255;
-    static constexpr double TIRE_HEIGHT = TIRE_WIDTH * 0.4;
     static constexpr double RIM_DIAM = 0.4572;
-    static constexpr double WHEEL_FRONT_RADIUS = TIRE_HEIGHT + RIM_DIAM / 2.0;
+
+    static constexpr double TIRE_FRONT_WIDTH = 0.255;
+    static constexpr double TIRE_FRONT_HEIGHT = TIRE_FRONT_WIDTH * 0.4;
+    static constexpr double WHEEL_FRONT_RADIUS = TIRE_FRONT_HEIGHT + RIM_DIAM / 2.0;
     static constexpr double WHEELS_FRONT_DISTANCE = 1.68;
+
+    static constexpr double TIRE_BACK_WIDTH = 0.330;
+    static constexpr double TIRE_BACK_HEIGHT = TIRE_BACK_WIDTH * 0.3;
+    static constexpr double WHEEL_BACK_RADIUS = TIRE_BACK_HEIGHT + RIM_DIAM / 2.0;
+
 
     static constexpr int MAP_SQUARE_SIZE = 4;
     static constexpr double MAP_SAFE_MARGIN = 0.2;
 
     static constexpr float CLUTCH_MAX = 0.5;
     static constexpr float CLUTCH_DELTA = 0.05;
-    static constexpr float clutchRange = 0.82;
+    static constexpr float CLUTCH_RANGE = 0.82;
     static constexpr float CLUTCH_DELTA_TIME = 0.02;
     static constexpr float CLUTCH_DELTA_RACED = 10;
     static constexpr float CLUTCH_DEC = 0.01;

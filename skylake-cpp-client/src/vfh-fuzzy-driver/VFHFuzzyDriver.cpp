@@ -55,7 +55,6 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 
     flEngine->setInputValue("angle", angle);
     flEngine->setInputValue("maxAngle", max_angle);
-    flEngine->setInputValue("diffAngle", diff_angle);
     flEngine->setInputValue("distFront", cs.getTrack(9));
     flEngine->setInputValue("distMaxAngle", dist_max_angle);
     flEngine->setInputValue("trackPos", trackPos);
@@ -63,20 +62,29 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 
     flEngine->process();
 
-    steer = (float)flEngine->getOutputVariable("steer")->getOutputValue();
+    //steer = (float)flEngine->getOutputVariable("steer")->getOutputValue();
     accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
     brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();
+
     gear = getGear(cs);
     steer = getSteer(cs);
 
+    brake = brake < 0 ? 0 : brake > 1 ? 1 : brake;
+    accel = accel < 0 ? 0 : accel > 1 ? 1 : accel;
+
+    float filtered_brake = filterABS(cs, brake);
+    float filtered_accel = filterTCL(cs, accel);
+
     static int cycle = 0;
     std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
-              << "cycle: " << cycle++ << "trackPos: " << trackPos << ", speedX: " << speedX << ", angle: " << angle
+              << "cycle: " << cycle++ << ", trackPos: " << trackPos << ", speedX: " << speedX << ", angle: " << angle
               << ", maxAngle: " << max_angle << ", diffAngle: " << diff_angle << ", steer: " << steer << ", accel: "
-              << accel << ", brake: " << brake << ", distFront: " << cs.getTrack(9) << ", distMaxAngle: "
+              << accel << ", filtered accel: " << filtered_accel << ", brake: " << brake << ", filtered brake: "
+              << filtered_brake << ", distFront: " << cs.getTrack(9) << ", distMaxAngle: "
               << dist_max_angle << std::endl;
-    control_.setAccel(accel);
-    control_.setBrake(brake);
+
+    control_.setAccel(filtered_accel);
+    control_.setBrake(filtered_brake);
     control_.setGear(gear);
     control_.setSteer(steer);
     control_.setClutch(clutch);
@@ -91,13 +99,45 @@ float VFHFuzzyDriver::getSteer(CarState &cs) {
         if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
             max_id = i;
     }
-    // steering angle is compute by correcting the actual car angle w.r.t. to track
-    // axis [cs.getAngle()] and to adjust car position w.r.t to middle of track [cs.getTrackPos()*0.5]
     double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
     //double targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
-    // at high speed reduce the steering command to avoid loosing the control
-    //if (cs.getSpeedX() > steerSensitivityOffset)
-    //    return targetAngle / (steerLock * (cs.getSpeedX() - steerSensitivityOffset) * wheelSensitivityCoeff);
-    //else
     return targetAngle / SkylakeConsts::STEER_LOCK_RAD;
+}
+
+float VFHFuzzyDriver::filterABS(CarState &cs, float brake)
+{
+    if (cs.getSpeedX() < 50.0)
+        return brake;
+
+    // compute the speed of wheels in m/s
+    double slip = 0.0;
+    for (int i = 0; i < 4; i++) {
+        if (i < 2)
+            slip += cs.getWheelSpinVel(i) * SkylakeConsts::WHEEL_FRONT_RADIUS;
+        else
+            slip += cs.getWheelSpinVel(i) * SkylakeConsts::WHEEL_BACK_RADIUS;
+    }
+    double speed = cs.getSpeedX() / 3.6;
+    // slip is the difference between actual speed of car and average speed of wheels
+    slip = speed - slip / 4.0;
+
+    if (slip > 2.0) {
+        brake = brake - (slip - 2.0) / 3.0;
+    }
+
+    // check brake is not negative, otherwise set it to zero
+    if (brake < 0)
+        return 0;
+    else
+        return brake;
+}
+
+float VFHFuzzyDriver::filterTCL(CarState &cs, float accel) {
+    if (cs.getSpeedX() < 50.0) return accel;
+    double slip = cs.getSpeedX() / ((cs.getWheelSpinVel(2) + cs.getWheelSpinVel(3)) *
+            SkylakeConsts::WHEEL_BACK_RADIUS / 2.0);
+
+    if (slip < 0.9)
+        accel = 0.0;
+    return accel;
 }
