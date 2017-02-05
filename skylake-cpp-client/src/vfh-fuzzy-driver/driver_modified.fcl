@@ -2,7 +2,6 @@ FUNCTION_BLOCK driver
 
 VAR_INPUT
   angle: REAL;
-  diffAngle: REAL;
   maxAngle: REAL;
   distFront: REAL;
   distMaxAngle: REAL;
@@ -21,14 +20,14 @@ FUZZIFY angle
   RANGE := (-3.150 .. 3.150);
 END_FUZZIFY
 
-FUZZIFY diffAngle
-  ENABLED : TRUE;
-  RANGE := (-6.300 .. 6.300);
-END_FUZZIFY
-
 FUZZIFY maxAngle
   ENABLED : TRUE;
   RANGE := (-3.150 .. 3.150);
+  TERM MID := Triangle -0.500 0.000 0.500;
+  TERM CLOSE_MID.B := Triangle -0.800 -0.550 -0.300;
+  TERM CLOSE_MID.A := Triangle 0.300 0.550 0.800;
+  TERM FAR.A := Trapezoid -3.150 -3.150 -1.300 -0.800;
+  TERM FAR.B := Trapezoid 0.800 1.300 3.150 3.150;
 END_FUZZIFY
 
 FUZZIFY distFront
@@ -90,7 +89,7 @@ RULEBLOCK
   OR : MAX;
   ACT : MIN;
   RULE 1 : if speedX is SLOW then brake is NONACTIVE
-  RULE 2 : if speedX is FAST and (distFront is CLOSE or distFront is MEDIUM) then brake is ACTIVE
+  RULE 2 : if speedX is FAST then brake is ACTIVE
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

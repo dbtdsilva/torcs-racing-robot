@@ -67,13 +67,19 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();
 
     gear = getGear(cs);
-    steer = getSteer(cs);
+    steer = getSteer(cs, cs.getTrack(9) <= 0);
 
     brake = brake < 0 ? 0 : brake > 1 ? 1 : brake;
     accel = accel < 0 ? 0 : accel > 1 ? 1 : accel;
+    steer = steer < -1 ? -1 : steer > 1 ? 1 : steer;
 
     float filtered_brake = filterABS(cs, brake);
     float filtered_accel = filterTCL(cs, accel);
+
+    if (cs.getSpeedX() >= 120)
+        filtered_accel = 0;
+    if (cs.getSpeedX() <= 50)
+        steer /= 10;
 
     static int cycle = 0;
     std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
@@ -87,20 +93,24 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     control_.setBrake(filtered_brake);
     control_.setGear(gear);
     control_.setSteer(steer);
-    control_.setClutch(clutch);
+    control_.setClutch(getRaceClutch(cs));
     control_.setFocus(focus);
     control_.setMeta(meta);
     return control_;
 }
 
-float VFHFuzzyDriver::getSteer(CarState &cs) {
-    int max_id = -1;
-    for (int i = 0; i < 19; i++) {
-        if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
-            max_id = i;
+float VFHFuzzyDriver::getSteer(CarState &cs, bool lost) {
+    double targetAngle;
+    if (lost) {
+        int max_id = -1;
+        for (int i = 0; i < 19; i++) {
+            if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
+                max_id = i;
+        }
+        targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
+    } else {
+        targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
     }
-    double targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
-    //double targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
     return targetAngle / SkylakeConsts::STEER_LOCK_RAD;
 }
 

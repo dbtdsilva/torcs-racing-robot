@@ -14,7 +14,7 @@ public:
 
     bool loadFCLfile(std::string fclFile);
     virtual CarControl wDrive(CarState cs);
-    float getSteer(CarState& cs);
+    float getSteer(CarState& cs, bool lost);
     float filterABS(CarState &cs, float brake);
     float filterTCL(CarState &cs, float accel);
 private:
