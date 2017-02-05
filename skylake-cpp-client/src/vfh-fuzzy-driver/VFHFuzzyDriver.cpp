@@ -76,10 +76,10 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     float filtered_brake = filterABS(cs, brake);
     float filtered_accel = filterTCL(cs, accel);
 
-    if (cs.getSpeedX() >= 120)
+    if (cs.getSpeedX() >= 140)
         filtered_accel = 0;
     if (cs.getSpeedX() <= 50)
-        steer /= 10;
+        steer /= 3;
 
     static int cycle = 0;
     std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
@@ -101,13 +101,13 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 
 float VFHFuzzyDriver::getSteer(CarState &cs, bool lost) {
     double targetAngle;
-    if (lost) {
+    if (!lost) {
         int max_id = -1;
         for (int i = 0; i < 19; i++) {
             if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
                 max_id = i;
         }
-        targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0) );// * 0.5);
+        targetAngle = (cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0));// * 0.5);
     } else {
         targetAngle = (cs.getAngle() - 0.5 * cs.getTrackPos());
     }
