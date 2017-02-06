@@ -1,10 +1,8 @@
 #include "VFHFuzzyDriver.h"
 
 #include <iomanip>
-#include <iostream>
 #include <core/SkylakeConsts.h>
 
-#include <math.h>
 
 VFHFuzzyDriver::VFHFuzzyDriver()
 {
@@ -34,7 +32,6 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 {
     int gear = 0; // {-1,.., 6}
     float steer = 0; // [-1, 1]
-    float clutch = 0; // [0, 1]
     int meta = 0; // {0, 1}
     int focus = 0; // [-90, 90]
     float accel = 0; // [0, 1]
@@ -42,7 +39,6 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 
     float trackPos = cs.getTrackPos(); // [-1, 1]
     float angle = cs.getAngle(); // [-3.15, 3.15]
-    //float track9 = cs.getTrack(9); // [0, 200.0]
     float speedX = cs.getSpeedX(); // [0, inf]
 
     int max_id = -1;
@@ -64,20 +60,16 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 
     flEngine->process();
 
-    //steer = (float)flEngine->getOutputVariable("steer")->getOutputValue();
     accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
     brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();
 
     gear = getGear(cs);
     steer = getSteer(cs, cs.getTrack(9) <= 0);
 
-    if (cs.getTrack(9) <= 70) {
-        steer *= 3.0;
-    }
-
-    if (cs.getTrack(9) <= 70) {
+    if (cs.getTrack(9) <= 70)
+        steer *= 2.0;
+    if (cs.getTrack(9) <= 70)
         brake *= 4;
-    }
 
     brake = brake < 0 ? 0 : brake > 1 ? 1 : brake;
     accel = accel < 0 ? 0 : accel > 1 ? 1 : accel;
@@ -111,25 +103,18 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 }
 
 float interpolation(float x) {
-    /*return  (3.819181134387*pow(10.0,-16)*pow(x,9)-
-            3.4714224102966*pow(10.0,-13)*pow(x,8)+
-            1.2506847536199*pow(10.0,-10)*pow(x,7)-
-            2.3163334050356*pow(10.0,-8)*pow(x,6)+
-            2.3875280480966*pow(10.0,-6)*pow(x,5)-
-            0.000138234*pow(x,4)+
-            0.0042882*pow(x,3)-0.0612592*pow(x,2)+ 0.100325* x+10)*0.5;*/
-    return 2.6825396825396*pow(10.0,-10)*
-                   pow(x,5)-
-            1.5146031746031*pow(10.0,-7)*pow(x,4)+0.0000305389*pow(x,3)-0.00249325*pow(x,2)+0.0455714*x+3.0;
-    /*return -4.825396825396*pow(10.0,-10)*pow(x, 5) +
-            2.1860317460317*pow(10.0, -7) * pow(x, 4) -
-            0.0000326222*pow(x,3) +
-            0.00181254*pow(x,2)-0.053381*x+4.0;*/
+    // Really aggressive
+    /*return  (3.819181134387*pow(10.0,-16)*pow(x,9) - 3.4714224102966*pow(10.0,-13)*pow(x,8) +
+            1.2506847536199*pow(10.0,-10)*pow(x,7) - 2.3163334050356*pow(10.0,-8)*pow(x,6) +
+            2.3875280480966*pow(10.0,-6)*pow(x,5) - 0.000138234*pow(x,4) + 0.0042882*pow(x,3)-0.0612592*pow(x,2) +
+            0.100325* x+10)*0.5; */
+    return static_cast<float>(2.6825396825396 * pow(10.0,-10) * pow(x,5) - 1.5146031746031 * pow(10.0,-7) * pow(x,4) +
+            0.0000305389 * pow(x,3) - 0.00249325 * pow(x,2) + 0.0455714 * x + 3.0);
 
 }
 
 float VFHFuzzyDriver::getSteer(CarState &cs, bool lost) {
-    /*
+    /* Used to visualize the VFH
     Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
     for (int i = 0; i < 19; i++) {
         line(histImage, Point(2*i, 0), Point(2*(i), (int)cs.getTrack(i)), Scalar(0,0,0), 1, 8, 0);
@@ -185,7 +170,6 @@ float VFHFuzzyDriver::filterTCL(CarState &cs, float accel) {
     if (cs.getSpeedX() < 15.0) return accel;
     double slip = cs.getSpeedX() / ((cs.getWheelSpinVel(2) + cs.getWheelSpinVel(3)) *
             SkylakeConsts::WHEEL_BACK_RADIUS / 2.0);
-
     if (slip < 0.9)
         accel = 0.0;
     return accel;
