@@ -39,5 +39,5 @@ ADD_EXECUTABLE(vfh-fuzzy
         vfh-fuzzy-driver/client.cpp
         vfh-fuzzy-driver/VFHFuzzyDriver.cpp vfh-fuzzy-driver/VFHFuzzyDriver.h)
 
-TARGET_LINK_LIBRARIES(vfh-fuzzy ${FUZZY_LIBRARIES})
+TARGET_LINK_LIBRARIES(vfh-fuzzy ${FUZZY_LIBRARIES} ${SDL2_LIBRARIES} ${OpenCV_LIBS})
 SET_TARGET_PROPERTIES(vfh-fuzzy PROPERTIES COMPILE_FLAGS "-std=c++14 -O3")
