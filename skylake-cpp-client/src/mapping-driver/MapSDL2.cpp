@@ -47,10 +47,10 @@ void MapSDL2::render_full_map(const Map* map) {
     cout << "wat" << endl;
     for (int x = 0; x < raw_map.size(); x++) {
         for (int y = 0; y < raw_map[x].size(); y++) {
-            rect.x = x;// * (1 + 1);
-            rect.y = y;// * (1 + 1);
-            rect.w = 1;
-            rect.h = 1;
+            rect.x = x-1;// * (1 + 1);
+            rect.y = y-1;// * (1 + 1);
+            rect.w = 3;
+            rect.h = 3;
 
             SDL_SetRenderDrawColor(renderer_, raw_map[x][y].color.R, raw_map[x][y].color.G,
                                    raw_map[x][y].color.B, raw_map[x][y].color.A);

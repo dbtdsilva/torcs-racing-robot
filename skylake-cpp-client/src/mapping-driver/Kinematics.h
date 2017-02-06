@@ -4,7 +4,7 @@
 #include <tuple>
 #include "core-common/CarState.h"
 
-#define USE_YAW
+//#define USE_YAW
 
 class Kinematics {
 public:

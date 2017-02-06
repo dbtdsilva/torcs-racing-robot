@@ -77,7 +77,7 @@ void Map::evaluate_position(const int& x, const int& y) {
 
     if (map_debug_ != nullptr) {
         if (map_[x][y].state == SAFE)
-            map_[x][y].color.set(0, 255, 0, 255);
+            map_[x][y].color.set(0, 0, 255, 255);
         else if (map_[x][y].state == UNSAFE)
             map_[x][y].color.set(0, 0, 0, 255);
     }
