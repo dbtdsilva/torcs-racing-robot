@@ -129,7 +129,6 @@ float VFHFuzzyDriver::getSteer(CarState &cs, bool lost) {
             max_id = i;
     }
     if (lost || cs.getTrack(9) >= 150.0) {
-        cout << "USING THIS SHIT" << endl << endl;
         targetAngle = (cs.getAngle() - 0.1 * cs.getTrackPos());
     } else {
         targetAngle = ((cs.getAngle() - ((lrf_angles_[max_id] * M_PI) / 180.0))
