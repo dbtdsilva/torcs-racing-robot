@@ -67,13 +67,13 @@ CarControl SkylakeDriver::wDrive(CarState cs)
         render = 0;
         map_.render_map();
     }
-    /*Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
+    Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
     for (int i = 0; i < 19; i++) {
-        line(histImage, Point(2*i, 0), Point(2*(i), (int)cs.getTrack(i)), Scalar(0,0,0), 1, 8, 0);
+        line(histImage, Point(2*i*8, 0), Point(2*(i)*8, (int)cs.getTrack(i) * 2), Scalar(0,0,0), 8, 8, 0);
     }
     namedWindow("Image", CV_WINDOW_AUTOSIZE);
     imshow("Image", histImage);
-    waitKey(1);*/
+    waitKey(1);
     return control;
 }
 

@@ -3,6 +3,9 @@
 #include <iomanip>
 #include <core/SkylakeConsts.h>
 
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+using namespace cv;
 
 VFHFuzzyDriver::VFHFuzzyDriver()
 {
@@ -99,6 +102,15 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     control_.setClutch(getRaceClutch(cs));
     control_.setFocus(focus);
     control_.setMeta(meta);
+
+    /* Used to visualize the VFH */
+    Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
+    for (int i = 0; i < 19; i++) {
+        line(histImage, Point(2*i*8, 0), Point(2*(i)*8, (int)cs.getTrack(i) * 2), Scalar(0,0,0), 8, 8, 0);
+    }
+    namedWindow("Image", CV_WINDOW_AUTOSIZE);
+    imshow("Image", histImage);
+    waitKey(1);
     return control_;
 }
 
@@ -114,14 +126,6 @@ float interpolation(float x) {
 }
 
 float VFHFuzzyDriver::getSteer(CarState &cs, bool lost) {
-    /* Used to visualize the VFH
-    Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
-    for (int i = 0; i < 19; i++) {
-        line(histImage, Point(2*i, 0), Point(2*(i), (int)cs.getTrack(i)), Scalar(0,0,0), 1, 8, 0);
-    }
-    namedWindow("Image", CV_WINDOW_AUTOSIZE);
-    imshow("Image", histImage);
-    waitKey(1);*/
     double targetAngle;
     int max_id = -1;
     for (int i = 0; i < 19; i++) {
