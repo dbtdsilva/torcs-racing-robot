@@ -34,7 +34,7 @@ FUZZIFY distFront
   ENABLED : TRUE;
   RANGE := (-1.000 .. 200.000);
   TERM CLOSE := Ramp 100.000 -1.000;
-  TERM MEDIUM := Triangle 50.000 110.000 160.000;
+  TERM MEDIUM := Triangle 60.000 120.000 180.000;
   TERM FAR := Ramp 140.000 200.000;
 END_FUZZIFY
 
@@ -78,10 +78,11 @@ END_DEFUZZIFY
 
 DEFUZZIFY brake
   ENABLED : TRUE;
-  RANGE := (-1.000 .. 1.000);
-  TERM NONACTIVE := Rectangle -1.000 0.000;
+  RANGE := (-0.900 .. 1.000);
+  TERM NONACTIVE := Rectangle -0.900 0.000;
   TERM FULLBRAKE := Ramp 0.340 1.000;
-  TERM MIDBRAKE := Triangle 0.000 0.320 0.740;
+  TERM MIDBRAKE := Triangle 0.000 0.738 0.740;
+  TERM SLOWBRAKE := Triangle 0.000 0.392 0.392;
   METHOD : COG;
   ACCU : MAX;
   DEFAULT := 0.000;
@@ -100,7 +101,7 @@ RULEBLOCK
   RULE 6 : if (maxAngle is CLOSE_MID.A or maxAngle is CLOSE_MID.B) and speedX is FAST then brake is MIDBRAKE
   RULE 7 : if (maxAngle is FAR.A or maxAngle is FAR.B) and (distFront is CLOSE or distFront is MEDIUM) then brake is FULLBRAKE
   RULE 8 : if distFront is CLOSE then brake is FULLBRAKE
-  RULE 9 : if distFront is MEDIUM then brake is MIDBRAKE
+  RULE 9 : if distFront is MEDIUM and speedX is FAST then brake is FULLBRAKE and accel is NORMAL
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

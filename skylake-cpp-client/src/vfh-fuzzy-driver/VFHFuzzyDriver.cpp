@@ -70,11 +70,13 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 
     gear = getGear(cs);
     steer = getSteer(cs, cs.getTrack(9) <= 0);
+
     if (cs.getTrack(9) <= 70) {
         steer *= 3.0;
     }
+
     if (cs.getTrack(9) <= 70) {
-        brake *= 2;
+        brake *= 4;
     }
 
     brake = brake < 0 ? 0 : brake > 1 ? 1 : brake;
