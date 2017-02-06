@@ -15,7 +15,7 @@
 <params name="car1-trb1" type="template">
 	<section name="Driver">
 		
-		<!-- Position of the driver -->
+		<!-- Position of the mapping-driver -->
 		<attnum name="xpos" val="0.75" unit="m"/>
 		<attnum name="ypos" val="0.00" unit="m"/>
 		<attnum name="zpos" val="0.95" unit="m"/>

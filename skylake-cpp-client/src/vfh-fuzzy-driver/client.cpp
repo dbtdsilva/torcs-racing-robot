@@ -42,7 +42,7 @@ void parse_args(int argc, char *argv[], std::string &serverName, unsigned int &s
     maxEpisodes = 0;
     maxSteps    = 0;
     stage       = BaseDriver::UNKNOWN;
-    fclFile     = "driver.fcl";
+    fclFile     = "mapping-driver.fcl";
 
     std::vector<std::string> args(argv, argv + argc);
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << " * server name:  " << serverName << std::endl;
     std::cout << " * server port:  " << serverPort << std::endl;
-    std::cout << " * driver id     " << driverId   << std::endl;
+    std::cout << " * mapping-driver id     " << driverId   << std::endl;
     std::cout << " * track name:   " << trackName  << std::endl;
 
     std::string switchStage;
