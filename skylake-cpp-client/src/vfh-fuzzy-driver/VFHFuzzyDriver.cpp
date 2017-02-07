@@ -35,6 +35,7 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 {
     static float distRacedLast = 0;
     static int ticksStucked = 0;
+    static int startupCycles = 0;
 
     float distRacedTick = cs.getDistRaced() - distRacedLast;
     distRacedLast = cs.getDistRaced();
@@ -108,6 +109,13 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
 
     static int cycle = 0;
 
+    if (cycle % 1000 == 0) {
+        cout << "Cycle: " << cycle << endl;
+    }
+    if (cycle++ == 10000) {
+        cout << "Score: " << cs.getDistRaced() << endl;
+    } 
+
     /*std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
               << "cycle: " << cycle++ << ", distRaced: " << cs.getDistRaced() << ", trackPos: " << trackPos
               << ", speedX: " << speedX << ", angle: " << angle << ", maxAngle: " << max_angle << ", diffAngle: "
@@ -116,6 +124,16 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
               << filtered_brake << ", distFront: " << cs.getTrack(9) << ", distMaxAngle: "
               << dist_max_angle << std::endl;*/
 
+
+    startupCycles++;
+    if (startupCycles <= 100) {
+        filtered_accel = 1;
+        filtered_brake = 0;
+        gear = 1;
+    }
+    if (startupCycles == 150) {
+        cout << cs.getDistRaced() << endl;
+    }
     control_.setAccel(filtered_accel);
     control_.setBrake(filtered_brake);
     control_.setGear(gear);

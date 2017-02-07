@@ -2,7 +2,7 @@
 #include "SkylakeConsts.h"
 
 SkylakeBaseDriver::SkylakeBaseDriver() {
-
+    clutch = 0;
 }
 
 int SkylakeBaseDriver::getGear(CarState &cs, bool backwards) {
@@ -24,7 +24,6 @@ int SkylakeBaseDriver::getGear(CarState &cs, bool backwards) {
 }
 
 float SkylakeBaseDriver::getRaceClutch(CarState &cs) {
-    static float clutch = 0;
     float max_clutch = SkylakeConsts::CLUTCH_MAX;
 
     // Check if the current situation is the race start
@@ -34,7 +33,7 @@ float SkylakeBaseDriver::getRaceClutch(CarState &cs) {
     // Adjust the current value of the clutch
     if (clutch > 0) {
         double delta = SkylakeConsts::CLUTCH_DELTA;
-        if (cs.getSpeedX() <= 10) {
+        if (cs.getSpeedX() <= 40) {
             // Apply a stronger clutch output when the gear is one and the race is just started
             delta /= 2;
             max_clutch *= SkylakeConsts::CLUTCH_MAX_MODIFIER;

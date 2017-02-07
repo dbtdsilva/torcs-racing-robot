@@ -19,6 +19,7 @@ protected:
     virtual float getRaceClutch(CarState& cs);
 
     vector<float> lrf_angles_;
+    float clutch = 0;
 };
 
 
