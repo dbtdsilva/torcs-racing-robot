@@ -33,6 +33,12 @@ bool VFHFuzzyDriver::loadFCLfile(std::string fclFile)
 
 CarControl VFHFuzzyDriver::wDrive(CarState cs)
 {
+    static float distRacedLast = 0;
+    static int ticksStucked = 0;
+
+    float distRacedTick = cs.getDistRaced() - distRacedLast;
+    distRacedLast = cs.getDistRaced();
+
     int gear = 0; // {-1,.., 6}
     float steer = 0; // [-1, 1]
     int meta = 0; // {0, 1}
@@ -40,40 +46,59 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     float accel = 0; // [0, 1]
     float brake = 0; // [0, 1]
 
-    float trackPos = cs.getTrackPos(); // [-1, 1]
-    float angle = cs.getAngle(); // [-3.15, 3.15]
-    float speedX = cs.getSpeedX(); // [0, inf]
+    static bool stuck = false;
+    if (!stuck) {
+        if (ticksStucked > 75) {
+            stuck = true;
+            ticksStucked = 0;
+        } else if (distRacedTick == 0 && fabs(cs.getAngle()) > M_PI / 6) {
+            ticksStucked++;
+        } else {
+            ticksStucked = 0;
+        }
 
-    int max_id = -1;
-    for (int i = 0; i < 19; i++) {
-        if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
-            max_id = i;
+        float trackPos = cs.getTrackPos(); // [-1, 1]
+        float angle = cs.getAngle(); // [-3.15, 3.15]
+        float speedX = cs.getSpeedX(); // [0, inf]
+
+        int max_id = -1;
+        for (int i = 0; i < 19; i++) {
+            if (max_id == -1 || cs.getTrack(max_id) <= cs.getTrack(i))
+                max_id = i;
+        }
+        double max_angle = -(lrf_angles_[max_id] * M_PI) / 180.0; // [-3.15, 3.15]
+        float dist_max_angle = cs.getTrack(max_id);
+
+        flEngine->setInputValue("angle", angle);
+        flEngine->setInputValue("maxAngle", max_angle);
+        flEngine->setInputValue("distFront", cs.getTrack(9));
+        flEngine->setInputValue("distMaxAngle", dist_max_angle);
+        flEngine->setInputValue("trackPos", trackPos);
+        flEngine->setInputValue("speedX", speedX);
+
+        flEngine->process();
+
+        accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
+        brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();
+
+        gear = getGear(cs);
+        steer = getSteer(cs, cs.getTrack(9) <= 0);
+
+        /*if (cs.getTrack(9) <= 70)
+            steer *= 2.0;*/
+        if (cs.getTrack(9) <= 70)
+            brake *= 4;
+    } else {
+        gear = -1;
+        ticksStucked++;
+        if (cs.getAngle() * cs.getTrackPos() > 0 && ticksStucked >= 25) {
+            stuck = false;
+            ticksStucked = 0;
+        } else {
+            accel = 1;
+            steer = -cs.getAngle() / SkylakeConsts::STEER_LOCK_RAD;
+        }
     }
-    double max_angle = -(lrf_angles_[max_id] * M_PI) / 180.0; // [-3.15, 3.15]
-    float dist_max_angle = cs.getTrack(max_id);
-
-    double diff_angle = abs(max_angle - angle);
-
-    flEngine->setInputValue("angle", angle);
-    flEngine->setInputValue("maxAngle", max_angle);
-    flEngine->setInputValue("distFront", cs.getTrack(9));
-    flEngine->setInputValue("distMaxAngle", dist_max_angle);
-    flEngine->setInputValue("trackPos", trackPos);
-    flEngine->setInputValue("speedX", speedX);
-
-    flEngine->process();
-
-    accel = (float)flEngine->getOutputVariable("accel")->getOutputValue();
-    brake = (float)flEngine->getOutputVariable("brake")->getOutputValue();
-
-    gear = getGear(cs);
-    steer = getSteer(cs, cs.getTrack(9) <= 0);
-
-    if (cs.getTrack(9) <= 70)
-        steer *= 2.0;
-    if (cs.getTrack(9) <= 70)
-        brake *= 4;
-
     brake = brake < 0 ? 0 : brake > 1 ? 1 : brake;
     accel = accel < 0 ? 0 : accel > 1 ? 1 : accel;
     steer = steer < -1 ? -1 : steer > 1 ? 1 : steer;
@@ -81,19 +106,15 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     float filtered_brake = filterABS(cs, brake);
     float filtered_accel = filterTCL(cs, accel);
 
-    //if (cs.getSpeedX() >= 140)
-    //   filtered_accel = 0;
-    //if (cs.getSpeedX() <= 50)
-    //    steer /= 3;
-
     static int cycle = 0;
-    std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
+
+    /*std::cout << std::fixed << std::setw(7) << std::setprecision(5) << std::setfill('0')
               << "cycle: " << cycle++ << ", distRaced: " << cs.getDistRaced() << ", trackPos: " << trackPos
               << ", speedX: " << speedX << ", angle: " << angle << ", maxAngle: " << max_angle << ", diffAngle: "
               << diff_angle << ", steer: " << steer << ", accel: " << accel << ", filtered accel: "
               << filtered_accel << ", brake: " << brake << ", filtered brake: "
               << filtered_brake << ", distFront: " << cs.getTrack(9) << ", distMaxAngle: "
-              << dist_max_angle << std::endl;
+              << dist_max_angle << std::endl;*/
 
     control_.setAccel(filtered_accel);
     control_.setBrake(filtered_brake);
@@ -104,13 +125,13 @@ CarControl VFHFuzzyDriver::wDrive(CarState cs)
     control_.setMeta(meta);
 
     /* Used to visualize the VFH */
-    Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
+    /*Mat histImage(400, 400, CV_8UC1, Scalar(255, 255, 255));
     for (int i = 0; i < 19; i++) {
         line(histImage, Point(2*i*8, 0), Point(2*(i)*8, (int)cs.getTrack(i) * 2), Scalar(0,0,0), 8, 8, 0);
     }
     namedWindow("Image", CV_WINDOW_AUTOSIZE);
     imshow("Image", histImage);
-    waitKey(1);
+    waitKey(1);*/
     return control_;
 }
 
